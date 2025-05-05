@@ -1,5 +1,5 @@
 setuptools
-pandas # Optional
+pandas
 python-fasthtml
 fh-plotly
 MarkupSafe

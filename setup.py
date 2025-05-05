@@ -40,11 +40,12 @@ setup(
     install_requires=[
         "python-fasthtml",
         "fh-plotly",
-        "MarkupSafe"
+        "MarkupSafe",
+        "pandas"
     ],
     entry_points={
         "console_scripts": [
-            "deepboard=deepboard.entry:main"
+            "deepboard=deepboard.gui.entry:main"
         ]
     }
 )

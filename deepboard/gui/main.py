@@ -1,12 +1,14 @@
-import os.path
+import os
+import sys
+sys.path.append(os.getcwd())
 from fasthtml.common import *
-from pages.main_page.datagrid import SortableColumnsJs, right_click_handler_row, right_click_handler
-from pages.main_page import MainPage, build_main_page_endpoints
-from utils import prepare_db, Config, initiate_files, get_table_path_from_cli
-from pages.compare_page import build_compare_routes, ComparePage
+from deepboard.gui.pages.main_page.datagrid import SortableColumnsJs, right_click_handler_row, right_click_handler
+from deepboard.gui.pages.main_page import MainPage, build_main_page_endpoints
+from deepboard.gui.utils import prepare_db, Config, initiate_files, get_table_path_from_cli
+from deepboard.gui.pages.compare_page import build_compare_routes, ComparePage
+from deepboard.gui.pages import _not_found
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
-from pages import _not_found
 
 # Create config files to customize the UI
 initiate_files()
@@ -43,8 +45,8 @@ async def get(fname:str, ext:str):
     if fname == "theme" and ext == "css":
         if os.path.exists(os.path.expanduser('~/.config/deepboard/theme.css')):
             return FileResponse(os.path.expanduser('~/.config/deepboard/THEME.css'))
-
-    return FileResponse(f'assets/{fname}.{ext}')
+    root = os.path.dirname(os.path.abspath(__file__))
+    return FileResponse(f'{root}/assets/{fname}.{ext}')
 
 
 @rt("/")
@@ -78,4 +80,4 @@ def get(session, elementIds: str, top: int, left: int):
 
 build_main_page_endpoints(rt)
 build_compare_routes(rt)
-serve()
+serve(reload=False)

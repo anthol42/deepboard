@@ -8,11 +8,7 @@ import warnings
 import shutil
 import sqlite3
 import hashlib
-try:
-    import pandas as pd
-    PD_AVAILABLE = True
-except ModuleNotFoundError:
-    PD_AVAILABLE = False
+import pandas as pd
 
 from .logwritter import LogWriter
 from .cursor import Cursor
@@ -379,15 +375,12 @@ class ResultTable:
         table = [[row.get(col[0]) for col in columns] for key, row in exp_info.items()]
         return [col[2] for col in columns], [col[0] for col in columns], table
 
-    def to_pd(self, get_hidden: bool = False) -> 'pd.DataFrame':
+    def to_pd(self, get_hidden: bool = False) -> pd.DataFrame:
         """
         Export the table to a pandas dataframe.
         :param get_hidden: If True, it will include the hidden runs.
         :return: The table as a pandas dataframe.
         """
-        if not PD_AVAILABLE:
-            raise ImportError("The pandas package is not installed. You need pandas to export the table to a pandas "
-                              "Dataframe")
 
         columns, col_ids, data = self.get_results(show_hidden=get_hidden)
         df = pd.DataFrame(data, columns=columns)
