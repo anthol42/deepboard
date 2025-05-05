@@ -51,7 +51,7 @@ function copyToClipboard(container) {
 function shiftClickDataGrid(event){
     const el = event.target.closest('.table-row');
     if (!el) return; // Not one of ours
-    if (event.shiftKey) {
+    if (event.ctrlKey || event.metaKey) {
       const originalUrl = el.getAttribute('hx-get'); // e.g. "/default-endpoint?runID=3"
       const url = new URL(originalUrl, window.location.origin); // create full URL to parse
       const params = url.search;

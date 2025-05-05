@@ -4,7 +4,6 @@ import sys
 
 
 def main():
-    print(os.getcwd())
     if os.path.dirname(__file__) not in sys.path:
         sys.path.insert(0, os.path.dirname(__file__))
     script_path = os.path.join(os.path.dirname(__file__), "main.py")
