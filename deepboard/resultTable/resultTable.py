@@ -8,6 +8,11 @@ import warnings
 import shutil
 import sqlite3
 import hashlib
+try:
+    import pandas as pd
+    PD_AVAILABLE = True
+except ModuleNotFoundError:
+    PD_AVAILABLE = False
 
 from .logwritter import LogWriter
 from .cursor import Cursor
@@ -323,6 +328,7 @@ class ResultTable:
         This function will build the result table and return it as a list. It will also return the column names and
         their unique id. It will not return the columns that were hidden and will format the table to respect the
         column order. By default, it does not include hidden runs, but they can be included by setting the show_hidden.
+        You can also get a single row by passing a run_id to the method.
         :param run_id: the run id. If none is specified, it fetches all results
         :param show_hidden: Show hidden runs.
         :return: A list of columns names, a list of column ids and a list of rows
@@ -372,6 +378,24 @@ class ResultTable:
 
         table = [[row.get(col[0]) for col in columns] for key, row in exp_info.items()]
         return [col[2] for col in columns], [col[0] for col in columns], table
+
+    def to_pd(self, get_hidden: bool = False) -> 'pd.DataFrame':
+        """
+        Export the table to a pandas dataframe.
+        :param get_hidden: If True, it will include the hidden runs.
+        :return: The table as a pandas dataframe.
+        """
+        if not PD_AVAILABLE:
+            raise ImportError("The pandas package is not installed. You need pandas to export the table to a pandas "
+                              "Dataframe")
+
+        columns, col_ids, data = self.get_results(show_hidden=get_hidden)
+        df = pd.DataFrame(data, columns=columns)
+        if "run_id" in col_ids:
+            idx = col_ids.index("run_id")
+            colname = columns[idx]
+            df.set_index(colname, inplace=True)
+        return df
 
     @property
     def result_columns(self) -> Dict[str, Tuple[Optional[int], str]]:
