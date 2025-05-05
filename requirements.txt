@@ -1,2 +1,5 @@
 setuptools
 pandas # Optional
+python-fasthtml
+fh-plotly
+MarkupSafe
