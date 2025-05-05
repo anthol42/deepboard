@@ -78,5 +78,4 @@ def get(session, elementIds: str, top: int, left: int):
 
 build_main_page_endpoints(rt)
 build_compare_routes(rt)
-
 serve()

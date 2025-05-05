@@ -26,7 +26,8 @@ setup(
     },
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: MacOS",
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
@@ -37,6 +38,13 @@ setup(
     ],
     python_requires=">=3.9",
     install_requires=[
-        "PyYAML>=6.0.0",
+        "python-fasthtml",
+        "fh-plotly",
+        "MarkupSafe"
     ],
+    entry_points={
+        "console_scripts": [
+            "deepboard=deepboard.entry:main"
+        ]
+    }
 )
