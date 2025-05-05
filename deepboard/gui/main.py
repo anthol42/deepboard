@@ -1,11 +1,10 @@
 import os.path
 from fasthtml.common import *
-from datagrid import DataGrid, build_datagrid_endpoints, SortableColumnsJs, CompareButton, right_click_handler_row
-from datagrid import right_click_handler as right_click_handler_dg
+from pages.main_page.datagrid import SortableColumnsJs, right_click_handler_row, right_click_handler
+from pages.main_page import MainPage, build_main_page_endpoints
 from utils import prepare_db, Config, initiate_files
+from pages.compare_page import build_compare_routes, ComparePage
 from deepboard.resultTable import ResultTable
-from right_panel import RightPanel, build_right_panel_routes, reset_scalar_session
-from compare_page import ChartCardList, CompareSetup, build_compare_routes
 from fh_plotly import plotly_headers
 from pages import _not_found
 
@@ -47,8 +46,6 @@ async def get(fname:str, ext:str):
 
     return FileResponse(f'assets/{fname}.{ext}')
 
-# DataGrid
-
 
 @rt("/")
 def get(session):
@@ -56,84 +53,30 @@ def get(session):
         session["show_hidden"] = False
     return (Title("Table"),
             Div(id="custom-menu"),
-            Div(
-                Div(
-                    DataGrid(session, wrapincontainer=True),
-                    CompareButton(session),
-                    cls="table-container"
-                ),
-                RightPanel(session),
-                cls='container',
-                id="container",
+            MainPage(session),
             )
-            )
+
 
 @rt("/compare")
 def get(session, run_ids: str):
-    run_ids = run_ids.split(",")
-    session["compare"] = {"selected-rows": run_ids}
-    return (Title("Compare"),
-            Div(id="custom-menu"),
-            Div(
-                Div(
-                    CompareSetup(session),
-                    cls="compare-setup-container"
-                ),
-                Div(
-                    ChartCardList(session),
-                    cls="cards-list-container"
-                ),
-                cls="compare-container"
-            )
-            )
-
-@rt("/reset")
-def get(session):
-    if "show_hidden" not in session:
-        session["show_hidden"] = False
-    session["datagrid"] = dict()
-    return Div(
-                Div(
-                    DataGrid(session, wrapincontainer=True),
-                    CompareButton(session),
-                    cls="table-container"
-                ),
-                RightPanel(session),
-                cls='container',
-                id="container",
-                hx_swap_oob="true"
-            )
-
-# Choose a row in the datagrid
-@rt("/click_row")
-def get(session, run_id: int):
-    reset_scalar_session(session)
-    if "datagrid" not in session:
-        session["datagrid"] = dict()
-    session["datagrid"]["selected-rows"] = [run_id]
-    # Return the image
-    return DataGrid(session), CompareButton(session, swap=True), RightPanel(session)
+    return ComparePage(session, run_ids)
 
 
-# Dropdown menu when right-cliked
+# Dropdown menu when right-clicked
 @rt("/get-context-menu")
 def get(session, elementIds: str, top: int, left: int):
     elementIds = elementIds.split(",")
     if any(elementId.startswith("grid-header") for elementId in elementIds):
-        return right_click_handler_dg(elementIds, top, left)
+        return right_click_handler(elementIds, top, left)
     elif any(elementId.startswith("grid-row") for elementId in elementIds):
         return right_click_handler_row(session, elementIds, top, left)
     else:
         return Div(
-            # Div(
-            #     cls='dropdown-menu'
-            # ),
             id='custom-menu',
             style=f'visibility: visible; top: {top}px; left: {left}px;',
         )
 
-build_datagrid_endpoints(rt)
-build_right_panel_routes(rt)
+build_main_page_endpoints(rt)
 build_compare_routes(rt)
 
 serve()
