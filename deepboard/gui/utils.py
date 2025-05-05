@@ -7,6 +7,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import yaml
 import os
 import shutil
+import argparse
 
 def _adapt_date_iso(val):
     """Adapt datetime.date to ISO 8601 date."""
@@ -155,6 +156,31 @@ def initiate_files():
 
     if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.css')):
         shutil.copy("assets/theme.css", os.path.expanduser('~/.config/deepboard/THEME.css'))
+
+def get_table_path_from_cli(default: str = "results/result_table.db") -> str:
+    # Parse cli args
+    parser = argparse.ArgumentParser(description="DeepBoard WebUI")
+    # Positional
+    parser.add_argument(
+            "table_path",
+            nargs="?",  # Make it optional positionally
+            help="Path to the result table db file"
+        )
+
+    # Optional keyword argument --table_path
+    parser.add_argument(
+        "--table_path",
+        help="Path to the result table db file"
+    )
+    args = parser.parse_args()
+
+    # Resolve to either positional or optional
+    table_path = args.table_path or args.__dict__.get("table_path")
+
+    if table_path is None:
+        table_path = default
+
+    return table_path
 
 class Config:
     COLORS = [

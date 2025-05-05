@@ -2,7 +2,7 @@ import os.path
 from fasthtml.common import *
 from pages.main_page.datagrid import SortableColumnsJs, right_click_handler_row, right_click_handler
 from pages.main_page import MainPage, build_main_page_endpoints
-from utils import prepare_db, Config, initiate_files
+from utils import prepare_db, Config, initiate_files, get_table_path_from_cli
 from pages.compare_page import build_compare_routes, ComparePage
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
@@ -13,13 +13,13 @@ initiate_files()
 
 # Load config and DB
 CONFIG = Config.FromFile(os.path.expanduser('~/.config/deepboard/THEME.yml'))
-DATABASE = "../resultTable/results/result_table.db"
+DATABASE = get_table_path_from_cli()
 prepare_db()
 
 # Load the result Table
 rTable = ResultTable(DATABASE)
 
-app = FastHTMLWithLiveReload(
+app = FastHTML(
     exception_handlers={404: _not_found},
     hdrs=(
         Link(rel='stylesheet', href='assets/base.css', type='text/css'),
