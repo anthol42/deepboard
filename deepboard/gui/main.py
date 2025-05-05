@@ -2,30 +2,23 @@ import os.path
 from fasthtml.common import *
 from datagrid import DataGrid, build_datagrid_endpoints, SortableColumnsJs, CompareButton, right_click_handler_row
 from datagrid import right_click_handler as right_click_handler_dg
-from utils import prepare_db, Config
+from utils import prepare_db, Config, initiate_files
 from deepboard.resultTable import ResultTable
 from right_panel import RightPanel, build_right_panel_routes, reset_scalar_session
 from compare_page import ChartCardList, CompareSetup, build_compare_routes
 from fh_plotly import plotly_headers
-import shutil
+from pages import _not_found
 
-if not os.path.exists(os.path.expanduser('~/.config/deepboard')):
-    os.makedirs(os.path.expanduser('~/.config/deepboard'))
+# Create config files to customize the UI
+initiate_files()
 
-if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.yml')):
-    shutil.copy("./THEME.yml", os.path.expanduser('~/.config/deepboard/THEME.yml'))
-
-if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.css')):
-    shutil.copy("assets/theme.css", os.path.expanduser('~/.config/deepboard/THEME.css'))
-
+# Load config and DB
 CONFIG = Config.FromFile(os.path.expanduser('~/.config/deepboard/THEME.yml'))
 DATABASE = "../resultTable/results/result_table.db"
-
 prepare_db()
 
+# Load the result Table
 rTable = ResultTable(DATABASE)
-
-def _not_found(req, exc): return Titled('Oh no!', Div('We could not find that page :('))
 
 app = FastHTMLWithLiveReload(
     exception_handlers={404: _not_found},

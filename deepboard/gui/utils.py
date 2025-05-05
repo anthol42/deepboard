@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from decimal import Decimal, ROUND_HALF_UP
 import yaml
 import os
+import shutil
 
 def _adapt_date_iso(val):
     """Adapt datetime.date to ISO 8601 date."""
@@ -144,6 +145,16 @@ def smart_round(val, decimals=4):
     quantizer = Decimal('1').scaleb(-decimals)
     d = Decimal(str(val)).quantize(quantizer, rounding=ROUND_HALF_UP)
     return float(d.normalize())
+
+def initiate_files():
+    if not os.path.exists(os.path.expanduser('~/.config/deepboard')):
+        os.makedirs(os.path.expanduser('~/.config/deepboard'))
+
+    if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.yml')):
+        shutil.copy("./THEME.yml", os.path.expanduser('~/.config/deepboard/THEME.yml'))
+
+    if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.css')):
+        shutil.copy("assets/theme.css", os.path.expanduser('~/.config/deepboard/THEME.css'))
 
 class Config:
     COLORS = [

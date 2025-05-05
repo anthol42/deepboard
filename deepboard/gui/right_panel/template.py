@@ -59,7 +59,7 @@ def OpenPanel(session, run_id: int, active_tab: str = 'scalars'):
 def RightPanel(session):
     placeholder_text = [
         P("Select an item to see the run", cls="right-panel-placeholder"),
-        P("Shift + click to compare runs", cls="right-panel-placeholder")
+        P("Shift + click to compare_page runs", cls="right-panel-placeholder")
     ]
     if "datagrid" in session and session["datagrid"].get("selected-rows") and len(session["datagrid"]["selected-rows"]) == 1:
         run_id = session["datagrid"]["selected-rows"][0]
