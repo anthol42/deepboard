@@ -2,6 +2,7 @@ from typing import *
 from fasthtml.common import *
 from .datagrid import DataGrid
 from .compare_button import CompareButton
+from ..main_page import MainPage
 
 def build_datagrid_endpoints(rt):
     rt("/hide")(hide_column)
@@ -15,6 +16,7 @@ def build_datagrid_endpoints(rt):
     rt("/show_run")(show_run)
     rt("/show_hidden")(show_hidden)
     rt("/hide_hidden")(hide_hidden)
+    rt("/compare_action")(compare_action)
 
 async def hide_column(session, col: str):
     from __main__ import rTable
@@ -102,3 +104,9 @@ async def show_hidden(session):
 async def hide_hidden(session):
     session["show_hidden"] = False
     return DataGrid(session)
+
+def compare_action(session, run_ids: str):
+    if "show_hidden" not in session:
+        session["show_hidden"] = False
+    session["datagrid"] = dict()
+    return MainPage(session, swap=True), HttpHeader("HX-Blank-Redirect", f"/compare?run_ids={run_ids}")

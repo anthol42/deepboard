@@ -65,3 +65,13 @@ function shiftClickDataGrid(event){
     }
 }
 document.addEventListener('click', shiftClickDataGrid);
+
+// New htmx event: open in a new tab when data-new-tab attribute is present
+document.addEventListener('htmx:beforeOnLoad', function (event) {
+    const redirectUrl = event.detail.xhr.getResponseHeader('HX-Blank-Redirect');
+    if (redirectUrl && event.detail.elt.hasAttribute('data-new-tab')) {
+        // Prevent htmx from performing the redirect in the current tab
+        console.log("Here")
+        window.open(redirectUrl, '_blank');
+    }
+  });
