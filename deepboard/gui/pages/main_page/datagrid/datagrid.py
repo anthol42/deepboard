@@ -3,7 +3,10 @@ from fasthtml.common import *
 from .row import Row
 from .header import Header, HeaderRename
 
-def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False):
+def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, fullscreen: bool = False):
+    """
+    Note that fullscreen only work if the container is requested because it applies on the container
+    """
     from __main__ import rTable, CONFIG
 
     if "datagrid" not in session:
@@ -44,7 +47,12 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False):
                     )
                     ),
                 Tbody(
-                    *[Row(row, run_id, max_decimals=CONFIG.MAX_DEC, selected=run_id in rows_selected, hidden=run_id in rows_hidden) for row, run_id in zip(data, run_ids)],
+                    *[Row(row,
+                          run_id,
+                          max_decimals=CONFIG.MAX_DEC,
+                          selected=run_id in rows_selected,
+                          hidden=run_id in rows_hidden,
+                          fullscreen=fullscreen) for row, run_id in zip(data, run_ids)],
                 ),
                 cls="data-grid"
             ),
@@ -52,7 +60,7 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False):
     if wrapincontainer:
         return Div(
                 table,
-                cls="scroll-container",
+                cls="scroll-container" if not fullscreen else "scroll-container fullscreen",
                 id="experiment-table",
             ),
     else:

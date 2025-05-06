@@ -1,5 +1,5 @@
 
-#right-panel {
+.right-panel {
   position: relative;
   width: 100%;
   display: flex;
@@ -7,6 +7,10 @@
   align-items: center;
 }
 
+.right-panel-closed{
+  width: 0;
+  visibility: hidden;
+}
 .right-panel-placeholder {
   color: var(--secondary-text-color);
   font-size: 1.1rem;

@@ -10,6 +10,7 @@ from deepboard.gui.pages import _not_found
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
 
+DEBUG = True
 # Create config files to customize the UI
 initiate_files()
 
@@ -23,7 +24,8 @@ prepare_db()
 # Load the result Table
 rTable = ResultTable(DATABASE)
 
-app = FastHTML(
+cls = FastHTMLWithLiveReload if DEBUG else FastHTML
+app = cls(
     exception_handlers={404: _not_found},
     hdrs=(
         Link(rel='stylesheet', href='assets/base.css', type='text/css'),
@@ -81,4 +83,4 @@ def get(session, elementIds: str, top: int, left: int):
 
 build_main_page_endpoints(rt)
 build_compare_routes(rt)
-serve(reload=False)
+serve(reload=DEBUG)

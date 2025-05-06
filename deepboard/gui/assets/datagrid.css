@@ -57,6 +57,9 @@
   border-radius: var(--dg-border-radius);
 }
 
+.fullscreen{
+  max-width: 95vw;
+}
 .sortable {
   background-color: inherit;
   display: flex;
