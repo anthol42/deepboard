@@ -18,10 +18,13 @@ from .table_schema import create_database
 class NoCommitAction(Enum):
     """
     How to notify the user when there are changes that are not committed and a new run is started not in DEBUG mode
+    - `NOP`: No action
+    - `WARN`: Show a warning
+    - `RAISE`: Raise an exception
     """
-    NOP = "NOP" # No action
-    WARN = "WARN" # Show a warning
-    RAISE = "RAISE" # Raise an exception
+    NOP = "NOP"
+    WARN = "WARN"
+    RAISE = "RAISE"
 
 
 class ResultTable:
@@ -31,15 +34,19 @@ class ResultTable:
     All actions performed by the GUI (DeepBoard) are available by public methods to get a programmatic access.
 
     How to use:
-        - First, specify a path the result table. If the db was not created, it will be created automatically.
-        - Then, create a run with all the specific parameters describing the run. A unique run_id will be generated.
-        Note that each run must be unique. This security allows more reproducible runs. If one run perform better than
-        the others, you can run the code again with all the parameters in the result table and you should get the same
-        results.
-        - If you simply want to test your code, you can create a debug run. It won't create a permanent entry in the
-        table. You will still be able to see the logged scalars in the GUI with the run_id -1 that is reserved for
-        debug runs. This run will be overwritten by the next debug run.
-        - Finally, you can interact with the table with the different available methods.
+
+    - First, specify a path the result table. If the db was not created, it will be created automatically.
+
+    - Then, create a run with all the specific parameters describing the run. A unique run_id will be generated.
+    Note that each run must be unique. This security allows more reproducible runs. If one run perform better than
+    the others, you can run the code again with all the parameters in the result table and you should get the same
+    results.
+
+    - If you simply want to test your code, you can create a debug run. It won't create a permanent entry in the
+    table. You will still be able to see the logged scalars in the GUI with the run_id -1 that is reserved for
+    debug runs. This run will be overwritten by the next debug run.
+
+    - Finally, you can interact with the table with the different available methods.
     """
     def __init__(self, db_path: str = "results/result_table.db", nocommit_action: NoCommitAction = NoCommitAction.WARN):
         """
@@ -47,7 +54,7 @@ class ResultTable:
         :param nocommit_action: What to do if changes are not committed
         """
         if not os.path.exists(db_path):
-            self.create_database(db_path)
+            self._create_database(db_path)
         db_path = PurePath(db_path) if not isinstance(db_path, PurePath) else db_path
 
         # The configuration files will be back up there
@@ -468,5 +475,5 @@ class ResultTable:
         return hash_func.hexdigest()
 
     @staticmethod
-    def create_database(db_path):
+    def _create_database(db_path):
         create_database(db_path)
