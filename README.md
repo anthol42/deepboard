@@ -8,6 +8,8 @@ curves of any runs. In addition, it lets you commpare training curves
 between runs. You can even download the charts that you have generated:)
 ## 🔥 Screenshots 🔥
 ![](./assets/main_view.png)
+
+
 ![](./assets/compare_view.png)
 ## 🌟 Project Philosophy
 Before diving in, it’s important to understand the philosophy behind this project. In deep learning, it’s easy to get 
