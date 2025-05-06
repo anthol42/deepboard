@@ -61,7 +61,7 @@ def get_lines(socket, split, metric, key: Literal["step", "duration"]):
     for rep in available_rep:
         rep_df = df.loc[(slice(None), rep), :]
         out.append({
-            "index": rep_df.index.get_level_values("step"),
+            "index": rep_df.index.get_level_values("step") if key == "step" else rep_df["duration"],
             "value": rep_df["value"],
             "epoch": rep_df["epoch"].values if len(available_epochs) > 1 else None,
         })
