@@ -23,7 +23,7 @@ prepare_db()
 # Load the result Table
 rTable = ResultTable(DATABASE)
 
-app = FastHTMLWithLiveReload(
+app = FastHTML(
     exception_handlers={404: _not_found},
     hdrs=(
         Link(rel='stylesheet', href='assets/base.css', type='text/css'),
@@ -81,4 +81,4 @@ def get(session, elementIds: str, top: int, left: int):
 
 build_main_page_endpoints(rt)
 build_compare_routes(rt)
-serve(reload=True)
+serve(reload=False)

@@ -61,7 +61,7 @@ class LogWriter:
 
     def add_scalar(self, tag: str, scalar_value: Union[float, int],
                    step: Optional[int] = None, epoch: Optional[int] = None,
-                   walltime: Optional[float] = None):
+                   walltime: Optional[float] = None, flush: bool = False):
         """
         Add a scalar to the resultTable
         :param tag: The tag, formatted as: 'split/name' or simply 'split'
@@ -69,6 +69,7 @@ class LogWriter:
         :param step: The global step. If none, the one calculated is used
         :param epoch: The epoch. If None, none is saved
         :param walltime: Override the wall time with this
+        :param flush: Force flush all the scalars in memory
         :return: None
         """
         if not self.enabled:
@@ -95,6 +96,9 @@ class LogWriter:
 
         # Added a row to table logs
         self._log(tag, epoch, step, split, name, scalar_value, walltime, self.run_rep)
+
+        # Flush all if requested to force flush
+        self._flush_all()
 
     def read_scalar(self, tag) -> List[Scalar]:
         """
@@ -156,8 +160,7 @@ class LogWriter:
         :return: None
         """
         # Start by flushing the buffer
-        for tag in self.buffer.keys():
-            self._flush(tag)
+        self._flush_all()
 
         # Then, prepare the data to save
         query = "INSERT INTO Results (run_id, metric, value, is_hparam) VALUES (?, ?, ?, ?)"
@@ -255,6 +258,14 @@ class LogWriter:
         self.buffer[tag].append((self.run_id, epoch, step, split, name, scalar_value, walltime, run_rep))
 
         if len(self.buffer[tag]) >= self.flush_each:
+            self._flush(tag)
+
+    def _flush_all(self):
+        """
+        Flush all buffers.
+        :return: None
+        """
+        for tag in self.buffer.keys():
             self._flush(tag)
 
     def _flush(self, tag: str):
