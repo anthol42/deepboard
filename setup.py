@@ -7,7 +7,7 @@ if os.path.exists("README.md"):
 else:
     long_description = "No description found"
 
-long_description.replace("./src/", "https://raw.githubusercontent.com/anthol42/deepboard/main/src/")
+long_description.replace("./assets/", "https://raw.githubusercontent.com/anthol42/deepboard/main/assets/")
 # Load version
 with open("deepboard/__version__.py", "r") as f:
     version = f.read().split("=")[1].strip().strip("\"")
@@ -48,5 +48,6 @@ setup(
         "console_scripts": [
             "deepboard=deepboard.gui.entry:main"
         ]
-    }
+    },
+    packages=["deepboard"],
 )

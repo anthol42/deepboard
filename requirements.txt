@@ -3,3 +3,4 @@ pandas
 python-fasthtml
 fh-plotly
 MarkupSafe
+twine
