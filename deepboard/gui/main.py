@@ -16,6 +16,8 @@ initiate_files()
 # Load config and DB
 CONFIG = Config.FromFile(os.path.expanduser('~/.config/deepboard/THEME.yml'))
 DATABASE = get_table_path_from_cli()
+if not os.path.exists(DATABASE):
+    raise RuntimeError(f"ResultTable {DATABASE} does not exist")
 prepare_db()
 
 # Load the result Table
