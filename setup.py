@@ -7,6 +7,7 @@ if os.path.exists("README.md"):
 else:
     long_description = "No description found"
 
+long_description.replace("./src/", "https://raw.githubusercontent.com/anthol42/deepboard/main/src/")
 # Load version
 with open("deepboard/__version__.py", "r") as f:
     version = f.read().split("=")[1].strip().strip("\"")

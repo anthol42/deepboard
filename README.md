@@ -6,7 +6,9 @@ your code to make results reproducible. The `deepboard gui` module
 implement a webUI to visualize the training details and training 
 curves of any runs. In addition, it lets you commpare training curves
 between runs. You can even download the charts that you have generated:)
-
+## 🔥 Screenshots 🔥
+![](./src/main_view.png)
+![](./src/compare_view.png)
 ## 🌟 Project Philosophy
 Before diving in, it’s important to understand the philosophy behind this project. In deep learning, it’s easy to get 
 swept up in the excitement — experimenting with countless configurations in search of the perfect setup. 🔬✨ 
@@ -61,12 +63,12 @@ If you're feeling a bit overwhelmed or would like a project example, the
 [torchbuilder](https://github.com/anthol42/torchbuilder/tree/dev) app can generate various project templates. The 
 default template implements this philosophy, including the resultTable, making it a great starting point! 🚀
 
-## Installation
+## 🛠️ Installation
 ```shell
 pip install deepboard
 ```
 
-## How to use
+## 🚀 How to Use
 For your project, you will only need the `resultTable` module, as the `deepboard` module is primarily for the UI.
 
 ### ResultTable
