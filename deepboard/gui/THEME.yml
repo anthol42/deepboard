@@ -1,15 +1,15 @@
 COLORS: [
-        "#1f77b4",  # muted blue
-        "#ff7f0e",  # vivid orange
-        "#2ca02c",  # medium green
-        "#d62728",  # brick red
-        "#9467bd",  # muted purple
-        "#8c564b",  # brownish pink
-        "#e377c2",  # pink
-        "#7f7f7f",  # gray
-        "#bcbd22",  # lime yellow
-        "#17becf",  # cyan
-    ]
+    "#FF595E",  # Bright red
+    "#FFCA3A",  # Bright yellow
+    "#8AC926",  # Lime green
+    "#1982C4",  # Bright blue
+    "#6A4C93",  # Vivid purple
+    "#FF9F1C",  # Orange
+    "#D7263D",  # Crimson
+    "#3A86FF",  # Electric blue
+    "#8338EC",  # Purple
+    "#FB5607"   # Vivid orange-red
+]
 
 HIDDEN_COLOR: "#333333"  # gray for hidden lines
 
