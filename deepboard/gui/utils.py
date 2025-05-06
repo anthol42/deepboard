@@ -148,14 +148,15 @@ def smart_round(val, decimals=4):
     return float(d.normalize())
 
 def initiate_files():
+    abs_path = os.path.abspath(os.path.dirname(__file__))
     if not os.path.exists(os.path.expanduser('~/.config/deepboard')):
         os.makedirs(os.path.expanduser('~/.config/deepboard'))
 
     if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.yml')):
-        shutil.copy("./THEME.yml", os.path.expanduser('~/.config/deepboard/THEME.yml'))
+        shutil.copy(f"{abs_path}/THEME.yml", os.path.expanduser('~/.config/deepboard/THEME.yml'))
 
     if not os.path.exists(os.path.expanduser('~/.config/deepboard/THEME.css')):
-        shutil.copy("assets/theme.css", os.path.expanduser('~/.config/deepboard/THEME.css'))
+        shutil.copy(f"{abs_path}/assets/theme.css", os.path.expanduser('~/.config/deepboard/THEME.css'))
 
 def get_table_path_from_cli(default: str = "results/result_table.db") -> str:
     # Parse cli args

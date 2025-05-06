@@ -1,1 +1,1 @@
-recursive-include deepboard *.css *.js *.html
+recursive-include deepboard *.css *.js *.html *.yml
