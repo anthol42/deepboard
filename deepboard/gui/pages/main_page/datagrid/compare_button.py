@@ -5,7 +5,6 @@ def CompareButton(session, swap: bool = False):
     show = "datagrid" in session and "selected-rows" in session["datagrid"] and len(session["datagrid"]["selected-rows"]) > 1
     run_ids = session["datagrid"].get("selected-rows") or []
     run_ids_formatted = ','.join([str(i) for i in run_ids])
-    url = f"/compare?run_ids={run_ids_formatted}"
     return Div(
         Button(
             "Compare",

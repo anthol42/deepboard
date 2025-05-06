@@ -41,7 +41,6 @@ app = FastHTMLWithLiveReload(
 rt = app.route
 @rt("/assets/{fname:path}.{ext:static}")
 async def get(fname:str, ext:str):
-    print(f"\n\nServing static file: {fname}.{ext}")
     if fname == "theme" and ext == "css":
         if os.path.exists(os.path.expanduser('~/.config/deepboard/theme.css')):
             return FileResponse(os.path.expanduser('~/.config/deepboard/THEME.css'))
