@@ -139,13 +139,17 @@ def make_fig(lines, type: str = "step", smoothness: float = 0.):
 def smart_round(val, decimals=4):
     """
     Round a float to the given number of decimal places. However, if the float already has less decimal, noting is done!
+    In addition, if the value is about to get rounded to zero, it is converted to scientific notation.
     :param val: The value to round.
     :param decimals: The maximum number of decimal places to round.
     :return: The rounded value.
     """
+    val_dec = Decimal(str(val))
     quantizer = Decimal('1').scaleb(-decimals)
-    d = Decimal(str(val)).quantize(quantizer, rounding=ROUND_HALF_UP)
-    return float(d.normalize())
+    rounded = val_dec.quantize(quantizer, rounding=ROUND_HALF_UP)
+    if rounded.is_zero() and not val_dec.is_zero():
+        return f"{val:.{decimals}e}"
+    return str(rounded.normalize())
 
 def initiate_files():
     abs_path = os.path.abspath(os.path.dirname(__file__))

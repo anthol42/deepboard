@@ -10,7 +10,7 @@ from deepboard.gui.pages import _not_found
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
 
-DEBUG = True
+DEBUG = False
 # Create config files to customize the UI
 initiate_files()
 
