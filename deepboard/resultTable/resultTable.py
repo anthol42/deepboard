@@ -70,7 +70,8 @@ class ResultTable:
                 cli: dict,
                 comment: Optional[str] = None,
                 flush_each: int = 10,
-                keep_each: int = 1
+                keep_each: int = 1,
+                disable: bool = False
                 ) -> LogWriter:
         """
         Create a new logwritter object bound to a run entry in the table. Think of it as a socket.
@@ -82,6 +83,7 @@ class ResultTable:
         :param keep_each: If the training has a lot of steps, it might be preferable to not
         log every step to save space and speed up the process. This parameter controls every how many step we store the
         log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+        :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
         diff = get_diff()
@@ -97,63 +99,70 @@ class ResultTable:
         config_hash = self.get_file_hash(config_path)
         comment = "" if comment is None else comment
         cli = " ".join([f'{key}={value}' for key, value in cli.items()])
-        with self.cursor as cursor:
-            # Step 1: Check if the configuration already exists
-            cursor.execute("""
-                    SELECT * FROM Experiments
-                    WHERE experiment = ?
-                      AND config = ?
-                      AND config_hash = ?
-                      AND cli = ?
-                      AND comment = ?
-            """, (experiment_name, config_str, config_hash, cli, comment))
-            result = cursor.fetchall()
-            if result is not None:
-                status = [res[7] for res in result]
-                run_id = [res[0] for res in result]
+        if not disable:
+            with self.cursor as cursor:
+                # Step 1: Check if the configuration already exists
+                cursor.execute("""
+                        SELECT * FROM Experiments
+                        WHERE experiment = ?
+                          AND config = ?
+                          AND config_hash = ?
+                          AND cli = ?
+                          AND comment = ?
+                """, (experiment_name, config_str, config_hash, cli, comment))
+                result = cursor.fetchall()
+                if result is not None:
+                    status = [res[7] for res in result]
+                    run_id = [res[0] for res in result]
 
-                # We ignore debug runs
-                status = [status for i, status in enumerate(status) if run_id[i] != -1]
-                run_id = [runID for i, runID in enumerate(run_id) if runID != -1]
-                if len(status) == 0:
-                    # If here, only a debug run exists. So we need to create a new one
-                    run_id = None
-                    status = None
+                    # We ignore debug runs
+                    status = [status for i, status in enumerate(status) if run_id[i] != -1]
+                    run_id = [runID for i, runID in enumerate(run_id) if runID != -1]
+                    if len(status) == 0:
+                        # If here, only a debug run exists. So we need to create a new one
+                        run_id = None
+                        status = None
+                    else:
+                        # If here, the run does exist. So we will not create a new one
+                        run_id = run_id[0]
+                        status = status[0]
+
+                    if status is not None and status != "failed":
+                        # If here, the run does exist and is not failed. So we will not create a new one
+                        raise RuntimeError(f"Configuration has already been run with runID {run_id}. Consider changing "
+                                           f"parameter to avoid duplicate runs or add a comment.")
+                    elif run_id is not None and status == "failed":
+                        # If here, the run does exist, but failed. So we will retry it
+                        self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
+
+                    elif run_id is None:
+                        # Only a debug run exists. So we need to create a new one
+                        run_id = self._create_run(experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
+
                 else:
-                    # If here, the run does exist. So we will not create a new one
-                    run_id = run_id[0]
-                    status = status[0]
-
-                if status is not None and status != "failed":
-                    # If here, the run does exist and is not failed. So we will not create a new one
-                    raise RuntimeError(f"Configuration has already been run with runID {run_id}. Consider changing "
-                                       f"parameter to avoid duplicate runs or add a comment.")
-                elif run_id is not None and status == "failed":
-                    # If here, the run does exist, but failed. So we will retry it
-                    self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
-
-                elif run_id is None:
-                    # Only a debug run exists. So we need to create a new one
                     run_id = self._create_run(experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
 
-            else:
-                run_id = self._create_run(experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
-
-        if not isinstance(config_path, PurePath):
-            config_path = PurePath(config_path)
-        config_name = config_path.name
+            if not isinstance(config_path, PurePath):
+                config_path = PurePath(config_path)
+            config_name = config_path.name
+        else:
+            run_id = -2 # If disabled and not debug, we use -2 to indicate that it is a disabled run
+            if not isinstance(config_path, PurePath):
+                config_path = PurePath(config_path)
+            config_name = config_path.name
 
         extension = config_name.split(".")[-1]
         shutil.copy(config_path, self.configs_path / f'{run_id}.{extension}')
 
-        return LogWriter(self.db_path, run_id, datetime.now(), flush_each=flush_each, keep_each=keep_each)
+        return LogWriter(self.db_path, run_id, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable)
 
     def new_debug_run(self, experiment_name: str,
                 config_path: Union[str, PurePath],
                 cli: dict,
                 comment: Optional[str] = None,
                 flush_each: int = 10,
-                keep_each: int = 1
+                keep_each: int = 1,
+                disable: bool = False
                 ) -> LogWriter:
         """
         Create a new DEBUG socket to log the results. The results will be entered in the result table, but as the runID -1.
@@ -170,6 +179,7 @@ class ResultTable:
         :param keep_each: If the training has a lot of steps, it might be preferable to not
         log every step to save space and speed up the process. This parameter controls every how many step we store the
         log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+        :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
 
@@ -179,7 +189,8 @@ class ResultTable:
         comment = "" if comment is None else comment
         cli = " ".join([f'{key}={value}' for key, value in cli.items()])
 
-        self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, comment, start, None, None)
+        if not disable:
+            self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, comment, start, None, None)
 
         if not isinstance(config_path, PurePath):
             config_path = PurePath(config_path)
@@ -188,7 +199,7 @@ class ResultTable:
         extension = config_name.split(".")[-1]
         shutil.copy(config_path, self.configs_path / f'{-1}.{extension}')
 
-        return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each)
+        return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable)
 
     def load_config(self, run_id: int) -> str:
         """

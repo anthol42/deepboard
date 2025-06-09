@@ -1,7 +1,7 @@
 # TODO
 - [X] Fix when inf numbers are written as final results in the result table. (It raises an error when rounding the value)
 - [X] When a row is selected in the session, but it does not exit, the app crash until we reset the cookies in the GUI. Fix this
-- [ ] Add a way to disable the result socket. (You can call the methods, but it does nothing) Useful when optimizing with optuna
+- [X] Add a way to disable the result socket. (You can call the methods, but it does nothing) Useful when optimizing with optuna
 - [X] Add an option to display chart with a log scale in the GUI
 - [ ] When a tab has nothing (image, plot, text, scalars, etc), it should not be displayed in the GUI
 - [ ] Log images and matplotlib plots

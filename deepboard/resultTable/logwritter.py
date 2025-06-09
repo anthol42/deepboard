@@ -14,7 +14,8 @@ class LogWriter:
     You should not instantiate this class directly, but use the ResultTable class to create it instead.
 
     """
-    def __init__(self, db_path, run_id: int, start: datetime, flush_each: int = 10, keep_each: int = 1):
+    def __init__(self, db_path, run_id: int, start: datetime, flush_each: int = 10, keep_each: int = 1,
+                 disable: bool = False):
         """
         :param db_path: The path to the database file
         :param run_id: The run id of this run
@@ -22,6 +23,7 @@ class LogWriter:
         :param flush_each: Every how many logs should we write them to the database. (increase it to reduce io)
         :param keep_each: Every how many logs datapoint should we store. The others will be discarted. If 2, only one
         datapoint every two times the add_scalar method is called will be stored.
+        :param disable: If True, the logger is disabled and will not log anything in the database.
         """
         if keep_each <= 0:
             raise ValueError("Parameter keep_each must be grater than 0: {1, 2, 3, ...}")
@@ -37,6 +39,7 @@ class LogWriter:
         self.log_count = {}
         self.enabled = True
         self.run_rep = 0
+        self.disable = disable
 
         # Set the exception handler to set the status to failed and disable the logger if the program crashes
         self._exception_handler()
@@ -98,7 +101,8 @@ class LogWriter:
         self._log(tag, epoch, step, split, name, scalar_value, walltime, self.run_rep)
 
         # Flush all if requested to force flush
-        self._flush_all()
+        if flush:
+            self._flush_all()
 
     def read_scalar(self, tag) -> List[Scalar]:
         """
@@ -126,6 +130,9 @@ class LogWriter:
         """
 
         # Prepare the data to save
+        if self.disable:
+            return
+
         query = "INSERT INTO Results (run_id, metric, value, is_hparam) VALUES (?, ?, ?, ?)"
         data = [(self.run_id, key, value, True) for key, value in kwargs.items()]
         with self._cursor as cursor:
@@ -159,6 +166,8 @@ class LogWriter:
         :param kwargs: The metrics to save
         :return: None
         """
+        if self.disable:
+            return
         # Start by flushing the buffer
         self._flush_all()
 
@@ -180,6 +189,8 @@ class LogWriter:
         :param status: The status to set
         :return: None
         """
+        if self.disable:
+            return
         if status not in ["running", "finished", "failed"]:
             raise ValueError("Status must be one of: running, finished, failed")
         with self._cursor as cursor:
@@ -278,8 +289,10 @@ class LogWriter:
                 INSERT INTO Logs (run_id, epoch, step, split, label, value, wall_time, run_rep)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """
-        with self._cursor as cursor:
-            cursor.executemany(query, self.buffer[tag])
+
+        if not self.disable:
+            with self._cursor as cursor:
+                cursor.executemany(query, self.buffer[tag])
 
         # Reset the buffer
         self.buffer[tag] = []
