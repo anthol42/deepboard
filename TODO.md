@@ -7,7 +7,7 @@
 - [X] Add cli command used to launch the script
 - [ ] Log images and matplotlib plots
   - [X] Image support in result Table
-  - [ ] Image tab in right panel
+  - [X] Image tab in right panel
   - [ ] Autolog matplotlib plots in the result table
   - [ ] Fig tab in right panel
 - [ ] Log text and html fragments

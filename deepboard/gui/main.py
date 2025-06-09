@@ -10,7 +10,7 @@ from deepboard.gui.pages import _not_found
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
 
-DEBUG = False
+DEBUG = True
 # Create config files to customize the UI
 initiate_files()
 
@@ -34,6 +34,7 @@ app = cls(
         Link(rel='stylesheet', href='assets/charts.css', type='text/css'),
         Link(rel='stylesheet', href='assets/fileview.css', type='text/css'),
         Link(rel='stylesheet', href='assets/compare.css', type='text/css'),
+        Link(rel='stylesheet', href='assets/artefacts.css', type='text/css'),
         Link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css", rel="stylesheet"),
         plotly_headers,
         Script(src="assets/base.js"),
@@ -45,7 +46,7 @@ app = cls(
 rt = app.route
 @rt("/assets/{fname:path}.{ext:static}")
 async def get(fname:str, ext:str):
-    if fname == "theme" and ext == "css":
+    if fname == "theme" and ext == "css" and not DEBUG:
         if os.path.exists(os.path.expanduser('~/.config/deepboard/theme.css')):
             return FileResponse(os.path.expanduser('~/.config/deepboard/THEME.css'))
     root = os.path.dirname(os.path.abspath(__file__))

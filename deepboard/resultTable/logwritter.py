@@ -161,18 +161,23 @@ class LogWriter:
         # Add to buffer
         self._log_image(img_bytes, step, split, self.run_rep, epoch)
 
-    def read_images(self, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
+    def read_images(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
                     repetition: Optional[int] = None) -> List[dict]:
         """
         Return all images logged in the run with the given step, split and/or epoch.
+        :param id: The id of the image to read
         :param step: The step at which the image was generated. If None, all images are returned.
         :param split: The split in which the images were generated. If None, all splits are returned.
         :param epoch: The epoch at which the images were generated. If None, all epochs are returned.
         :param repetition: The repetition of the images. If None, all images are returned.
         :return: A list of image bytes
         """
-        command = "SELECT step, epoch, run_rep, split, image FROM Images WHERE run_id=?"
+        command = "SELECT id_, step, epoch, run_rep, split, image FROM Images WHERE run_id=?"
         params = [self.run_id]
+        if id is not None:
+            command += " AND id_=?"
+            params.append(id)
+
         if step is not None:
             command += " AND step=?"
             params.append(step)
@@ -194,11 +199,12 @@ class LogWriter:
             rows = cursor.fetchall()
             # Convert the bytes to PIL Image objects
             return [dict(
-                step=row[0],
-                epoch=row[1],
-                run_rep=row[2],
-                split=row[3],
-                image=Image.open(BytesIO(row[4]))
+                id=row[0],
+                step=row[1],
+                epoch=row[2],
+                run_rep=row[3],
+                split=row[4],
+                image=Image.open(BytesIO(row[5]))
             ) for row in rows]
 
 

@@ -1,6 +1,7 @@
 from fasthtml.common import *
 from datetime import datetime
 from .scalars import ScalarTab, scalar_enable
+from .images import ImageTab, images_enable
 from .config import ConfigView
 from .hparams import HParamsView
 from .run_info import InfoView
@@ -15,12 +16,17 @@ def reset_scalar_session(session):
 def RightPanelContent(session, run_id: int, active_tab: str):
     from __main__ import rTable
     scalar_is_available = scalar_enable(run_id)
+    images_is_available = images_enable(run_id)
     # Verify that the active tab requested is availalable
     if active_tab == 'scalars' and not scalar_is_available:
+        active_tab = "config"
+    elif active_tab == "images" and not images_is_available:
         active_tab = "config"
 
     if active_tab == 'scalars':
         tab_content = ScalarTab(session, run_id)
+    elif active_tab == 'images':
+        tab_content = ImageTab(session, run_id)
     elif active_tab == 'config':
         tab_content = ConfigView(run_id)
     elif active_tab == 'hparams':
@@ -39,6 +45,13 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         tabs.append(
             Div('Scalars', cls='tab active' if active_tab == 'scalars' else 'tab',
                 hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#right-panel-content',
+                hx_swap='outerHTML')
+        )
+
+    if images_is_available:
+        tabs.append(
+            Div('Images', cls='tab active' if active_tab == 'images' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=images', hx_target='#right-panel-content',
                 hx_swap='outerHTML')
         )
 
@@ -65,7 +78,7 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         id="right-panel-content"
     ),
 
-def OpenPanel(session, run_id: int, active_tab: str = 'scalars'):
+def OpenPanel(session, run_id: int, active_tab: str = 'images'):
     return Div(
         RightPanelContent(session, run_id, active_tab),
         cls="open-right-panel"

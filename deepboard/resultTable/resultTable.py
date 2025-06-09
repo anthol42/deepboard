@@ -11,6 +11,8 @@ import sqlite3
 import hashlib
 import pandas as pd
 import shlex
+from PIL import Image
+from io import BytesIO
 
 from .logwritter import LogWriter
 from .cursor import Cursor
@@ -397,6 +399,25 @@ class ResultTable:
         table = [[row.get(col[0]) for col in columns] for key, row in exp_info.items()]
         return [col[2] for col in columns], [col[0] for col in columns], table
 
+    def get_image_by_id(self, image_id: int) -> Optional[Image.Image]:
+        """
+        If the image_id is valid, it will return the image as a PIL Image object.
+        :param image_id: The id of the image to fetch.
+        :return: The image as a PIL Image object or None if the image_id is not valid.
+        """
+        with self.cursor as cursor:
+            cursor.execute("SELECT image FROM Images WHERE id_=?", (image_id,))
+            row = cursor.fetchone()
+            if row is None:
+                return None
+
+            # get raw bytes
+            image_data = row[0]
+
+            # Convert bytes to PIL Image
+            image = Image.open(BytesIO(image_data))
+            return image
+
     def to_pd(self, get_hidden: bool = False) -> pd.DataFrame:
         """
         Export the table to a pandas dataframe.
@@ -486,6 +507,7 @@ class ResultTable:
             cursor.execute("DELETE FROM Experiments WHERE run_id=?", (run_id,))
             # Delete logs
             cursor.execute("DELETE FROM Logs WHERE run_id=?", (run_id,))
+            cursor.execute("DELETE FROM Images WHERE run_id=?", (run_id,))
             # Delete results
             cursor.execute("DELETE FROM Results WHERE run_id=?", (run_id,))
 
