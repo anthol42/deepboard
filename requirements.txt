@@ -4,3 +4,4 @@ python-fasthtml
 fh-plotly
 MarkupSafe
 twine
+pillow

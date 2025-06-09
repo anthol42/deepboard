@@ -36,7 +36,7 @@ def create_database(db_path):
         );
     """)
 
-    # Create Logs table
+    # Create Logs table for scalar values
     # Wall time is in seconds
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Logs
@@ -54,6 +54,21 @@ def create_database(db_path):
     );
     """)
 
+    # Create an Image table to store images
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Images
+    (
+        id_ INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        step INTEGER NOT NULL,
+        epoch INTEGER,
+        run_rep INTEGER NOT NULL,
+        img_type varchar(64) NOT NULL, -- IMAGE or PLOT
+        split varchar(128),
+        image BLOB NOT NULL,
+        FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
+    );
+    """)
     # Display Table
     # This table stores every column of Results, their order and whether they displayed or not
     # If order is Null, it means that the column is not displayed

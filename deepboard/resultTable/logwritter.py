@@ -3,7 +3,8 @@ from .cursor import Cursor
 from datetime import datetime
 from .scalar import Scalar
 import sys
-
+from PIL import Image
+from io import BytesIO
 
 class LogWriter:
     """
@@ -34,9 +35,16 @@ class LogWriter:
         self.start = start
         self.flush_each = flush_each
         self.keep_each = keep_each
+
+
         self.global_step = {}
         self.buffer = {}
         self.log_count = {}
+
+        self.image_buffer = {}
+        self.auto_image_step = {}
+        self.image_log_count = {}
+
         self.enabled = True
         self.run_rep = 0
         self.disable = disable
@@ -121,6 +129,78 @@ class LogWriter:
             # cursor.execute("SELECT * FROM Logs", (self.run_id, split, name))
             rows = cursor.fetchall()
             return [Scalar(*row[1:]) for row in rows]
+
+    def add_image(self, image: Union[bytes, Image.Image], step: Optional[int] = None, split: Optional[str] = None,
+                  epoch: Optional[int] = None):
+        """
+        Add an image to the resultTable
+        :param image: Must be png bytes or a PIL Image object.
+        :param step: The global step at which the image was generated. If None, the step will start from 0 and be
+        incremented everytime an image is uploaded in the given split.
+        :param split: The split in which the image was generated.
+        :param epoch: The epoch at which the image was generated. If None, no epoch is saved.
+        :return: None
+        """
+        if isinstance(image, Image.Image):
+            buffer = BytesIO()
+            image.save(buffer, format='PNG')
+            img_bytes = buffer.getvalue()
+        else:
+            img_bytes = image
+
+        if step is None:
+            if split is None:
+                split_ = "__default__"  # Default split if none is provided
+            else:
+                split_ = split
+            if split_ not in self.auto_image_step:
+                self.auto_image_step[split_] = 0
+            step = self.auto_image_step[split_]
+            self.auto_image_step[split_] += 1
+
+        # Add to buffer
+        self._log_image(img_bytes, step, split, self.run_rep, epoch)
+
+    def read_images(self, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
+                    repetition: Optional[int] = None) -> List[dict]:
+        """
+        Return all images logged in the run with the given step, split and/or epoch.
+        :param step: The step at which the image was generated. If None, all images are returned.
+        :param split: The split in which the images were generated. If None, all splits are returned.
+        :param epoch: The epoch at which the images were generated. If None, all epochs are returned.
+        :param repetition: The repetition of the images. If None, all images are returned.
+        :return: A list of image bytes
+        """
+        command = "SELECT step, epoch, run_rep, split, image FROM Images WHERE run_id=?"
+        params = [self.run_id]
+        if step is not None:
+            command += " AND step=?"
+            params.append(step)
+
+        if split is not None:
+            command += " AND split=?"
+            params.append(split)
+
+        if epoch is not None:
+            command += " AND epoch=?"
+            params.append(epoch)
+
+        if repetition is not None:
+            command += " AND run_rep=?"
+            params.append(repetition)
+
+        with self._cursor as cursor:
+            cursor.execute(f'{command};', tuple(params))
+            rows = cursor.fetchall()
+            # Convert the bytes to PIL Image objects
+            return [dict(
+                step=row[0],
+                epoch=row[1],
+                run_rep=row[2],
+                split=row[3],
+                image=Image.open(BytesIO(row[4]))
+            ) for row in rows]
+
 
     def add_hparams(self, **kwargs):
         """
@@ -271,13 +351,48 @@ class LogWriter:
         if len(self.buffer[tag]) >= self.flush_each:
             self._flush(tag)
 
+    def _log_image(self, image: bytes, step: int, split: Optional[int], repetition: int, epoch: Optional[int]):
+        """
+        Store the image log into the buffer, and flush the buffer if it is full.
+        :param image: The image bytes
+        :param step: The step
+        :param split: The split
+        :param repetition: The run repetition
+        :param epoch: The epoch
+        :return: None
+        """
+        if split not in self.image_buffer:
+            self.image_buffer[split] = []
+
+        self.image_buffer[split].append((self.run_id, step, epoch, repetition, "IMAGE", split, image))
+
+        if len(self.image_buffer[split]) >= self.flush_each:
+            self._flush_image(split)
+
     def _flush_all(self):
         """
         Flush all buffers.
         :return: None
         """
+        # Flush all the scalars
         for tag in self.buffer.keys():
             self._flush(tag)
+
+        # Flush all the images
+        for split in self.image_buffer.keys():
+            self._flush_image(split)
+
+    def _flush_image(self, split):
+        query = """
+                INSERT INTO Images (run_id, step, epoch, run_rep, img_type, split, image)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """
+        if not self.disable:
+            with self._cursor as cursor:
+                cursor.executemany(query, self.image_buffer[split])
+
+        # Reset the buffer
+        self.image_buffer[split] = []
 
     def _flush(self, tag: str):
         """
