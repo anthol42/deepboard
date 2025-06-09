@@ -181,6 +181,16 @@ def ScalarTab(session, runID, swap: bool = False):
         hx_swap_oob="true" if swap else None,
     )
 
+def scalar_enable(runID):
+    """
+    Check if some scalars are logged and available for the runID. If not, we consider disable it.
+    :param runID: The runID to check.
+    :return: True if scalars are available, False otherwise.
+    """
+    from __main__ import rTable
+    socket = rTable.load_run(runID)
+    keys = socket.formatted_scalars
+    return len(keys) > 0
 
 def build_scalar_routes(rt):
     rt("/scalars/change_chart")(change_chart_type)

@@ -1,6 +1,6 @@
 from fasthtml.common import *
 from datetime import datetime
-from .scalars import ScalarTab
+from .scalars import ScalarTab, scalar_enable
 from .config import ConfigView
 from .hparams import HParamsView
 from .run_info import InfoView
@@ -13,6 +13,12 @@ def reset_scalar_session(session):
     )
 
 def RightPanelContent(session, run_id: int, active_tab: str):
+    from __main__ import rTable
+    scalar_is_available = scalar_enable(run_id)
+    # Verify that the active tab requested is availalable
+    if active_tab == 'scalars' and not scalar_is_available:
+        active_tab = "config"
+
     if active_tab == 'scalars':
         tab_content = ScalarTab(session, run_id)
     elif active_tab == 'config':
@@ -25,21 +31,30 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         tab_content = Div(
             P("Invalid tab selected.", cls="error-message")
         )
-
     run_name = "DEBUG" if run_id == -1 else run_id
+    tabs = []
+
+    # If the runID does not have any scalars logged, we do not show the scalars tab
+    if scalar_is_available:
+        tabs.append(
+            Div('Scalars', cls='tab active' if active_tab == 'scalars' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#right-panel-content',
+                hx_swap='outerHTML')
+        )
+
+    tabs += [
+        Div('Config', cls='tab active' if active_tab == 'config' else 'tab',
+            hx_get=f'/fillpanel?run_id={run_id}&tab=config', hx_target='#right-panel-content', hx_swap='outerHTML'),
+        Div('HParams', cls='tab active' if active_tab == 'hparams' else 'tab',
+            hx_get=f'/fillpanel?run_id={run_id}&tab=hparams', hx_target='#right-panel-content', hx_swap='outerHTML'),
+        Div('Info', cls='tab active' if active_tab == 'run_info' else 'tab',
+            hx_get=f'/fillpanel?run_id={run_id}&tab=run_info', hx_target='#right-panel-content',
+            hx_swap='outerHTML'),
+    ]
     return Div(
         H1(f"Run: {run_name}"),
         Div(
-            Div('Scalars', cls='tab active' if active_tab == 'scalars' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#right-panel-content',
-                hx_swap='outerHTML'),
-            Div('Config', cls='tab active' if active_tab == 'config' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=config', hx_target='#right-panel-content', hx_swap='outerHTML'),
-            Div('HParams', cls='tab active' if active_tab == 'hparams' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=hparams', hx_target='#right-panel-content', hx_swap='outerHTML'),
-            Div('Info', cls='tab active' if active_tab == 'run_info' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=run_info', hx_target='#right-panel-content',
-                hx_swap='outerHTML'),
+            *tabs,
             cls='tab-menu'
         ),
         Div(
@@ -82,6 +97,3 @@ def RightPanel(session, closed: bool = False):
 
 def fill_panel(session, run_id: int, tab: str):
     return RightPanelContent(session, run_id, tab)
-
-
-# 418 682 1744
