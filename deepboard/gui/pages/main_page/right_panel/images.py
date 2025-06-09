@@ -1,18 +1,12 @@
-import pandas as pd
-from typing import *
-from datetime import datetime, timedelta
 from fasthtml.common import *
-from PIL import Image
 from starlette.responses import Response
 
 def _get_images_groups(socket):
     images = socket.read_images()
 
     index = list({(img["step"], img["epoch"], img["run_rep"], img["split"]) for img in images})
-    sorted(index, key=lambda x: (x[0], x[2]))
 
     splits = list({elem[3] for elem in index})
-    sorted(splits)
 
     # Package images
     images_groups = {}
@@ -89,7 +83,7 @@ def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, selecte
     else:
         images_splits = data[(step, epoch, run_rep)]
         avail_splits = list(images_splits.keys())
-        sorted(avail_splits)
+        avail_splits.sort()
         if selected is None:
             selected = avail_splits[0]
         images = images_splits[selected]

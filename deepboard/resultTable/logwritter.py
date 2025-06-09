@@ -5,6 +5,7 @@ from .scalar import Scalar
 import sys
 from PIL import Image
 from io import BytesIO
+import matplotlib.pyplot as plt
 
 class LogWriter:
     """
@@ -16,7 +17,7 @@ class LogWriter:
 
     """
     def __init__(self, db_path, run_id: int, start: datetime, flush_each: int = 10, keep_each: int = 1,
-                 disable: bool = False):
+                 disable: bool = False, auto_log_plt=True):
         """
         :param db_path: The path to the database file
         :param run_id: The run id of this run
@@ -25,6 +26,8 @@ class LogWriter:
         :param keep_each: Every how many logs datapoint should we store. The others will be discarted. If 2, only one
         datapoint every two times the add_scalar method is called will be stored.
         :param disable: If True, the logger is disabled and will not log anything in the database.
+        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
+        it checks only when a method on the socket is called.
         """
         if keep_each <= 0:
             raise ValueError("Parameter keep_each must be grater than 0: {1, 2, 3, ...}")
@@ -48,6 +51,11 @@ class LogWriter:
         self.enabled = True
         self.run_rep = 0
         self.disable = disable
+
+        self.pre_hooks: List[Callable[[], None]] = []
+
+        if auto_log_plt:
+            self.pre_hooks.append(self.detect_and_log_figures)
 
         # Set the exception handler to set the status to failed and disable the logger if the program crashes
         self._exception_handler()
@@ -83,6 +91,7 @@ class LogWriter:
         :param flush: Force flush all the scalars in memory
         :return: None
         """
+        self._run_pre_hooks()
         if not self.enabled:
             raise RuntimeError("The LogWriter is read only! This might be due to the fact that you loaded an already"
                                "existing one or you reported final metrics.")
@@ -131,7 +140,7 @@ class LogWriter:
             return [Scalar(*row[1:]) for row in rows]
 
     def add_image(self, image: Union[bytes, Image.Image], step: Optional[int] = None, split: Optional[str] = None,
-                  epoch: Optional[int] = None):
+                  epoch: Optional[int] = None, flush: bool = False):
         """
         Add an image to the resultTable
         :param image: Must be png bytes or a PIL Image object.
@@ -139,8 +148,10 @@ class LogWriter:
         incremented everytime an image is uploaded in the given split.
         :param split: The split in which the image was generated.
         :param epoch: The epoch at which the image was generated. If None, no epoch is saved.
+        :param flush: If True, flush all data in memory to the database.
         :return: None
         """
+        self._run_pre_hooks()
         if isinstance(image, Image.Image):
             buffer = BytesIO()
             image.save(buffer, format='PNG')
@@ -161,6 +172,9 @@ class LogWriter:
         # Add to buffer
         self._log_image(img_bytes, step, split, self.run_rep, epoch)
 
+        if flush:
+            self._flush_all()
+
     def read_images(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
                     repetition: Optional[int] = None) -> List[dict]:
         """
@@ -172,41 +186,33 @@ class LogWriter:
         :param repetition: The repetition of the images. If None, all images are returned.
         :return: A list of image bytes
         """
-        command = "SELECT id_, step, epoch, run_rep, split, image FROM Images WHERE run_id=?"
-        params = [self.run_id]
-        if id is not None:
-            command += " AND id_=?"
-            params.append(id)
+        return self._get_images(id, step, split, epoch, repetition, img_type="IMAGE")
 
-        if step is not None:
-            command += " AND step=?"
-            params.append(step)
 
-        if split is not None:
-            command += " AND split=?"
-            params.append(split)
+    def detect_and_log_figures(self, step: Optional[int] = None, split: Optional[str] = None,
+                               epoch: Optional[int] = None):
+        """
+        Detect matplotlib figures that are currently open and log them to the result table. (Save them as png).
+        :return: None
+        """
+        if step is None:
+            # Take the max step from scalars
+            step = max(self.global_step.values())
 
-        if epoch is not None:
-            command += " AND epoch=?"
-            params.append(epoch)
+        for num in plt.get_fignums():
+            fig = plt.figure(num)
+            fig.tight_layout()
 
-        if repetition is not None:
-            command += " AND run_rep=?"
-            params.append(repetition)
+            # Save it as bytes
+            buffer = BytesIO()
+            fig.savefig(buffer, format='png')
+            img_bytes = buffer.getvalue()
 
-        with self._cursor as cursor:
-            cursor.execute(f'{command};', tuple(params))
-            rows = cursor.fetchall()
-            # Convert the bytes to PIL Image objects
-            return [dict(
-                id=row[0],
-                step=row[1],
-                epoch=row[2],
-                run_rep=row[3],
-                split=row[4],
-                image=Image.open(BytesIO(row[5]))
-            ) for row in rows]
+            self._log_image(img_bytes, step, split, self.run_rep, epoch, type="PLOT")
 
+    def read_figures(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
+                    repetition: Optional[int] = None):
+        return self._get_images(id, step, split, epoch, repetition, img_type="PLOT")
 
     def add_hparams(self, **kwargs):
         """
@@ -214,7 +220,7 @@ class LogWriter:
         :param kwargs: The hyperparameters to save
         :return: None
         """
-
+        self._run_pre_hooks()
         # Prepare the data to save
         if self.disable:
             return
@@ -252,6 +258,7 @@ class LogWriter:
         :param kwargs: The metrics to save
         :return: None
         """
+        self._run_pre_hooks()
         if self.disable:
             return
         # Start by flushing the buffer
@@ -275,6 +282,7 @@ class LogWriter:
         :param status: The status to set
         :return: None
         """
+        self._run_pre_hooks()
         if self.disable:
             return
         if status not in ["running", "finished", "failed"]:
@@ -323,6 +331,47 @@ class LogWriter:
         """
         return self.read_scalar(tag)
 
+    def _run_pre_hooks(self):
+        for hook in self.pre_hooks:
+            hook()
+
+    def _get_images(self, id: Optional[int], step: Optional[int], split: Optional[str], epoch: Optional[int],
+                    repetition: Optional[int], img_type: Literal["IMAGE", "PLOT"]) -> List[dict]:
+        command = f"SELECT id_, step, epoch, run_rep, split, image FROM Images WHERE run_id=? AND img_type='{img_type}'"
+        params = [self.run_id]
+        if id is not None:
+            command += " AND id_=?"
+            params.append(id)
+
+        if step is not None:
+            command += " AND step=?"
+            params.append(step)
+
+        if split is not None:
+            command += " AND split=?"
+            params.append(split)
+
+        if epoch is not None:
+            command += " AND epoch=?"
+            params.append(epoch)
+
+        if repetition is not None:
+            command += " AND run_rep=?"
+            params.append(repetition)
+
+        with self._cursor as cursor:
+            cursor.execute(f'{command};', tuple(params))
+            rows = cursor.fetchall()
+            # Convert the bytes to PIL Image objects
+            return [dict(
+                id=row[0],
+                step=row[1],
+                epoch=row[2],
+                run_rep=row[3],
+                split=row[4],
+                image=Image.open(BytesIO(row[5]))
+            ) for row in rows]
+
     def _get_global_step(self, tag):
         """
         Keep track of the global step for each tag.
@@ -357,7 +406,8 @@ class LogWriter:
         if len(self.buffer[tag]) >= self.flush_each:
             self._flush(tag)
 
-    def _log_image(self, image: bytes, step: int, split: Optional[int], repetition: int, epoch: Optional[int]):
+    def _log_image(self, image: bytes, step: int, split: Optional[int], repetition: int, epoch: Optional[int],
+                   type: Literal["IMAGE", "PLOT"] = "IMAGE"):
         """
         Store the image log into the buffer, and flush the buffer if it is full.
         :param image: The image bytes
@@ -365,12 +415,13 @@ class LogWriter:
         :param split: The split
         :param repetition: The run repetition
         :param epoch: The epoch
+        :param type: The type of the image, either "IMAGE" or "PLOT". Default is "IMAGE".
         :return: None
         """
         if split not in self.image_buffer:
             self.image_buffer[split] = []
 
-        self.image_buffer[split].append((self.run_id, step, epoch, repetition, "IMAGE", split, image))
+        self.image_buffer[split].append((self.run_id, step, epoch, repetition, type, split, image))
 
         if len(self.image_buffer[split]) >= self.flush_each:
             self._flush_image(split)

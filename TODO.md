@@ -8,7 +8,7 @@
 - [ ] Log images and matplotlib plots
   - [X] Image support in result Table
   - [X] Image tab in right panel
-  - [ ] Autolog matplotlib plots in the result table
+  - [X] Autolog matplotlib plots in the result table
   - [ ] Fig tab in right panel
 - [ ] Log text and html fragments
 - [ ] Possibility to install only ResultTable and no GUI (because cannot install fast-html when python has no GIL)

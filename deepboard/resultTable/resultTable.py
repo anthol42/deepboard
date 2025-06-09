@@ -75,6 +75,7 @@ class ResultTable:
                 comment: Optional[str] = None,
                 flush_each: int = 10,
                 keep_each: int = 1,
+                auto_log_plt: bool = True,
                 disable: bool = False
                 ) -> LogWriter:
         """
@@ -87,6 +88,8 @@ class ResultTable:
         :param keep_each: If the training has a lot of steps, it might be preferable to not
         log every step to save space and speed up the process. This parameter controls every how many step we store the
         log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
+        it checks only when a method on the socket is called.
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
@@ -159,7 +162,8 @@ class ResultTable:
         extension = config_name.split(".")[-1]
         shutil.copy(config_path, self.configs_path / f'{run_id}.{extension}')
 
-        return LogWriter(self.db_path, run_id, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable)
+        return LogWriter(self.db_path, run_id, datetime.now(), flush_each=flush_each, keep_each=keep_each,
+                         disable=disable, auto_log_plt=auto_log_plt)
 
     def new_debug_run(self, experiment_name: str,
                 config_path: Union[str, PurePath],
@@ -167,6 +171,7 @@ class ResultTable:
                 comment: Optional[str] = None,
                 flush_each: int = 10,
                 keep_each: int = 1,
+                auto_log_plt: bool = True,
                 disable: bool = False
                 ) -> LogWriter:
         """
@@ -184,6 +189,8 @@ class ResultTable:
         :param keep_each: If the training has a lot of steps, it might be preferable to not
         log every step to save space and speed up the process. This parameter controls every how many step we store the
         log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
+        it checks only when a method on the socket is called.
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
@@ -204,7 +211,8 @@ class ResultTable:
         extension = config_name.split(".")[-1]
         shutil.copy(config_path, self.configs_path / f'{-1}.{extension}')
 
-        return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable)
+        return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable,
+                         auto_log_plt=auto_log_plt)
 
     def load_config(self, run_id: int) -> str:
         """
