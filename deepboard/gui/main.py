@@ -4,7 +4,7 @@ sys.path.append(os.getcwd())
 from fasthtml.common import *
 from deepboard.gui.pages.main_page.datagrid import SortableColumnsJs, right_click_handler_row, right_click_handler
 from deepboard.gui.pages.main_page import MainPage, build_main_page_endpoints
-from deepboard.gui.utils import prepare_db, Config, initiate_files, get_table_path_from_cli
+from deepboard.gui.utils import prepare_db, Config, initiate_files, get_table_path_from_cli, verify_runids
 from deepboard.gui.pages.compare_page import build_compare_routes, ComparePage
 from deepboard.gui.pages import _not_found
 from deepboard.resultTable import ResultTable
@@ -56,6 +56,10 @@ async def get(fname:str, ext:str):
 def get(session):
     if "show_hidden" not in session:
         session["show_hidden"] = False
+
+    # Check if row_selected exists.
+    verify_runids(session, rTable)
+
     return (Title("Table"),
             Div(id="custom-menu"),
             MainPage(session),

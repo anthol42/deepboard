@@ -398,6 +398,17 @@ class ResultTable:
         return df
 
     @property
+    def runs(self) -> List[int]:
+        """
+        Get all the runs in the result table. It will return a list of run ids.
+        :return: A list of run ids.
+        """
+        with self.cursor as cursor:
+            cursor.execute("SELECT run_id FROM Experiments")
+            rows = cursor.fetchall()
+            return [row[0] for row in rows]
+
+    @property
     def result_columns(self) -> Dict[str, Tuple[Optional[int], str]]:
         """
         Get all the columns in the result table that can be shown. It will return a dictionary where the keys are the

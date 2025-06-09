@@ -1,6 +1,6 @@
 from typing import *
 from fasthtml.common import *
-from deepboard.gui.components import Legend, ChartType, Smoother
+from deepboard.gui.components import Legend, ChartType, Smoother, LogSelector
 
 def CompareSetup(session, swap: bool = False):
     from __main__ import CONFIG
@@ -22,6 +22,7 @@ def CompareSetup(session, swap: bool = False):
         H1("Setup", cls="chart-scalar-title"),
         Legend(session, labels, path="/compare", selected_rows_key="compare"),
         ChartType(session, path="/compare", selected_rows_key="compare", session_path="compare"),
+        LogSelector(session, path="/compare", selected_rows_key="compare", session_path="compare"),
         Smoother(session, path="/compare", selected_rows_key="compare", session_path="compare"),
         cls="setup-card",
         id="setup-card",

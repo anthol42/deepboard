@@ -4,7 +4,7 @@ from typing import *
 from datetime import datetime, timedelta
 from fasthtml.common import *
 from fh_plotly import plotly2fasthtml
-from deepboard.gui.components import Legend, Smoother, ChartType
+from deepboard.gui.components import Legend, Smoother, ChartType, LogSelector
 from deepboard.gui.utils import get_lines, make_fig
 
 def make_step_lines(socket, splits: set[str], metric: str, keys: set[tuple[str, str]]):
@@ -70,6 +70,7 @@ def Setup(session, labels: list[tuple]):
             Div(
                 Smoother(session, path = "/scalars", selected_rows_key="datagrid", session_path="scalars"),
                 ChartType(session, path = "/scalars", selected_rows_key="datagrid", session_path="scalars"),
+                LogSelector(session, path = "/scalars", selected_rows_key="datagrid", session_path="scalars"),
                 style="width: 100%; margin-right: 1em; display: flex; flex-direction: column; align-items: flex-start",
             ),
             Legend(session, labels, path = "/scalars", selected_rows_key="datagrid"),
@@ -78,7 +79,7 @@ def Setup(session, labels: list[tuple]):
         cls="chart-setup",
     )
 # Components
-def Chart(session, runID: int, metric: str, type: str = "step", running: bool = False):
+def Chart(session, runID: int, metric: str, type: str = "step", running: bool = False, logscale: bool = False):
     from __main__ import rTable
     socket = rTable.load_run(runID)
     keys = socket.formatted_scalars
@@ -97,11 +98,11 @@ def Chart(session, runID: int, metric: str, type: str = "step", running: bool = 
     lines.sort(key=lambda x: x[0])
     # Hide lines if needed
     lines = [line for line in lines if line[0] not in hidden_lines]
-    fig = make_fig(lines, type=type, smoothness=smoothness)
+    fig = make_fig(lines, type=type, smoothness=smoothness, log_scale=logscale)
 
     if running:
         update_params = dict(
-            hx_get=f"/scalars/chart?runID={runID}&metric={metric}&type={type}&running={running}",
+            hx_get=f"/scalars/chart?runID={runID}&metric={metric}&type={type}&running={running}&logscale={logscale}",
             hx_target=f"#chart-container-{runID}-{metric}",
             hx_trigger="every 10s",
             hx_swap="outerHTML",
@@ -115,7 +116,7 @@ def Chart(session, runID: int, metric: str, type: str = "step", running: bool = 
             **update_params
         )
 
-def LoadingChart(session, runID: int, metric: str, type: str, running: bool = False):
+def LoadingChart(session, runID: int, metric: str, type: str, running: bool = False, logscale: bool = False):
     return Div(
         Div(
             H1(metric, cls="chart-title"),
@@ -125,7 +126,7 @@ def LoadingChart(session, runID: int, metric: str, type: str, running: bool = Fa
         Div(
             cls="chart-container",
             id=f"chart-container-{runID}-{metric}",
-            hx_get=f"/scalars/chart?runID={runID}&metric={metric}&type={type}&running={running}",
+            hx_get=f"/scalars/chart?runID={runID}&metric={metric}&type={type}&running={running}&logscale={logscale}",
             hx_target=f"#chart-container-{runID}-{metric}",
             hx_trigger="load",
         ),
@@ -139,11 +140,12 @@ def Charts(session, runID: int, swap: bool = False, status: Literal["running", "
     keys = socket.formatted_scalars
     metrics = {label for split, label in keys}
     type = session["scalars"]["chart_type"] if "chart_type" in session["scalars"] else "step"
+    logscale = session["scalars"]["chart_scale"] == "log" if "chart_scale" in session["scalars"] else False
     out = Div(
             H1("Charts", cls="chart-scalar-title"),
         Ul(
             *[
-                Li(LoadingChart(session, runID, metric, type=type, running=status == "running"), cls="chart-list-item")
+                Li(LoadingChart(session, runID, metric, type=type, running=status == "running", logscale=logscale), cls="chart-list-item")
                 for metric in metrics
             ],
             cls="chart-list",
@@ -185,6 +187,7 @@ def build_scalar_routes(rt):
     rt("/scalars/hide_line")(hide_line)
     rt("/scalars/show_line")(show_line)
     rt("/scalars/change_smoother")(change_smoother)
+    rt("/scalars/change_scale")(change_chart_scale)
     rt("/scalars/chart")(load_chart)
 
 
@@ -224,5 +227,15 @@ def change_smoother(session, runIDs: str, smoother: int):
     runID = runIds[0]
     return ScalarTab(session, runID, swap=True)
 
-def load_chart(session, runID: int, metric: str, type: str, running: bool):
-    return Chart(session, runID, metric, type, running)
+def change_chart_scale(session, runIDs: str, log: bool):
+    new_type = "default" if log else "log"
+    session["scalars"]["chart_scale"] = new_type
+    runIds = runIDs.split(",")
+    runID = runIds[0]
+    return (
+        LogSelector(session, path="/scalars", selected_rows_key="datagrid", session_path="scalars"), # We want to toggle it
+        Charts(session, int(runID), swap=True)
+            )
+
+def load_chart(session, runID: int, metric: str, type: str, running: bool, logscale: bool):
+    return Chart(session, runID, metric, type, running, logscale=logscale)

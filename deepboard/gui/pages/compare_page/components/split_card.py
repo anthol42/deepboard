@@ -9,6 +9,7 @@ def SplitCard(session, split: str, metrics: List[str]):
     running = any([socket.status == "running" for socket in sockets])
     metrics = sorted(metrics)
     chart_type = session["compare"]["chart_type"] if "chart_type" in session["compare"] else "step"
+    logscale = session["compare"]["chart_scale"] == "log" if "chart_scale" in session["compare"] else False
 
     opened = session["compare"]["cards-state"][split] if "cards-state" in session["compare"] and split in session["compare"]["cards-state"] else True
     if opened:
@@ -25,7 +26,7 @@ def SplitCard(session, split: str, metrics: List[str]):
                 cls="split-card-header"
             ),
             Div(
-                *[LoadingChart(session, split, metric, type=chart_type, running=running) for metric in metrics],
+                *[LoadingChart(session, split, metric, type=chart_type, running=running, logscale=logscale) for metric in metrics],
                 cls="multi-charts-container"
             ),
             cls="split-card",

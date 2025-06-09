@@ -8,6 +8,7 @@ import yaml
 import os
 import shutil
 import argparse
+import math
 
 def _adapt_date_iso(val):
     """Adapt datetime.date to ISO 8601 date."""
@@ -80,7 +81,7 @@ def ema(values, alpha):
     """
     return values.ewm(alpha=alpha, adjust=False).mean()
 
-def make_fig(lines, type: str = "step", smoothness: float = 0.):
+def make_fig(lines, type: str = "step", smoothness: float = 0., log_scale: bool = False):
     from __main__ import CONFIG
     fig = go.Figure()
 
@@ -105,6 +106,8 @@ def make_fig(lines, type: str = "step", smoothness: float = 0.):
             line=dict(color=color),
             **additional_setup
         ))
+        if log_scale:
+            fig.update_yaxes(type="log")
 
     if type == "step":
         fig.update_layout(
@@ -144,6 +147,9 @@ def smart_round(val, decimals=4):
     :param decimals: The maximum number of decimal places to round.
     :return: The rounded value.
     """
+    # If infinity or NaN, return as is
+    if isinstance(val, float) and (math.isinf(val) or math.isnan(val)):
+        return str(val)
     val_dec = Decimal(str(val))
     quantizer = Decimal('1').scaleb(-decimals)
     rounded = val_dec.quantize(quantizer, rounding=ROUND_HALF_UP)
@@ -187,6 +193,22 @@ def get_table_path_from_cli(default: str = "results/result_table.db") -> str:
 
     return table_path
 
+def verify_runids(session: dict, rTable):
+    """
+    Verify that the runIDs in the session are valid and exist in the result table. If not, remove them from the session.
+    :param session: The fastHTML session dictionary.
+    :param rTable: The result table object.
+    :return: Modify inplace so it returns nothing.
+    """
+    if "datagrid" in session and session["datagrid"].get("selected-rows"):
+        valid_run_ids = []
+        runs = set(rTable.runs)
+        for run_id in session["datagrid"]["selected-rows"]:
+            if run_id in runs:
+                valid_run_ids.append(run_id)
+
+        # Set it back
+        session["datagrid"]["selected-rows"] = valid_run_ids
 class Config:
     COLORS = [
         "#1f77b4",  # muted blue
