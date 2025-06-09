@@ -1,6 +1,7 @@
 from fasthtml.common import *
 from starlette.responses import Response
 from typing import *
+from deepboard.gui.components import Modal
 
 def _get_images_groups(socket, type: Literal["IMAGE", "PLOT"]):
     if type == "IMAGE":
@@ -61,8 +62,76 @@ def ImageComponent(image_id: int):
     :return: Div containing the image.
     """
     return Div(
-        Img(src=f"/images/id={image_id}", alt="Image"),
+        A(
+            Img(src=f"/images/id={image_id}", alt="Image"),
+            hx_get=f"/images/open_modal?id={image_id}",
+            hx_target="#modal",
+            hx_swap="outerHTML",
+            style='cursor: pointer;',
+        ),
         cls="image",
+    )
+
+def InteractiveImage(image_id: int):
+    return Div(
+        Script(
+            """
+// For image zoom in modal
+var scale = 1;
+var zoomableDiv = document.getElementById('zoomableDiv');
+var container = document.querySelector('.interactive-image-container');
+
+// Mouse wheel zoom
+container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    scale = Math.max(0.5, Math.min(3, scale * delta));
+
+    zoomableDiv.style.transform = `scale(${scale})`;
+});
+
+
+
+// Touch zoom (pinch)
+var initialDistance = 0;
+var initialScale = 1;
+
+container.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        initialDistance = getDistance(e.touches[0], e.touches[1]);
+        initialScale = scale;
+        e.preventDefault();
+    }
+});
+
+container.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+        const currentDistance = getDistance(e.touches[0], e.touches[1]);
+        const ratio = currentDistance / initialDistance;
+        // Make it less sensitive by reducing the effect
+        const dampedRatio = 1 + (ratio - 1) * 0.5; // 50% sensitivity
+        scale = Math.max(0.5, Math.min(3, initialScale * dampedRatio));
+        zoomableDiv.style.transform = `scale(${scale})`;
+        e.preventDefault();
+    }
+});
+
+function getDistance(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+            """
+        ),
+        Div(
+            Div(
+            Img(src=f"/images/id={image_id}", alt="Image"),
+            cls="interactive-image",
+            id="zoomableDiv"
+        ),
+        cls="interactive-image-container",
+    )
     )
 
 def ImageGroup(images_id: List[int]):
@@ -144,6 +213,7 @@ def images_enable(runID, type: Literal["IMAGES", "PLOT"]):
 def build_images_routes(rt):
     rt("/images/change_split")(change_split)
     rt("/images/id={image_id}")(load_image)
+    rt("/images/open_modal")(open_image_modal)
 
 
 def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: int, split_select: str, img_type: str):
@@ -177,4 +247,12 @@ def load_image(image_id: int):
     return Response(
         content=img_buffer.getvalue(),
         media_type="image/png"
+    )
+
+def open_image_modal(session, id: int):
+    return Modal(
+        InteractiveImage(
+            id
+        ),
+        active=True,
     )

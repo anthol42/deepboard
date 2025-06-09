@@ -71,3 +71,22 @@ This css file contains classes for all artefacts tabs:
   display: inline-block;
   overflow: hidden;
 }
+
+.interactive-image-container{
+    width: 80vw;
+    height: 85vh;
+    overflow: hidden;
+    margin: 20px auto;
+    background: inherit;
+}
+.interactive-image{
+    width: 100%;
+    height: 100%;
+    transition: transform 0.1s ease;
+    transform-origin: center center;
+}
+
+.interactive-image img {
+    object-fit: contain;
+    display: block;
+}

@@ -11,4 +11,9 @@
   - [X] Autolog matplotlib plots in the result table
   - [X] Fig tab in right panel
 - [ ] Log text and html fragments
+ - [ ] Text support in result Table
+ - [ ] Html support in result Table
+ - [ ] HTML tab in right panel
+ - [ ] Text tab in right panel
+- [X] Zoom in modal when click image or figure
 - [ ] Possibility to install only ResultTable and no GUI (because cannot install fast-html when python has no GIL)
