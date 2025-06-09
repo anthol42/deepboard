@@ -1,3 +1,4 @@
+import sys
 from typing import *
 from enum import Enum
 from pathlib import PurePath
@@ -9,6 +10,7 @@ import shutil
 import sqlite3
 import hashlib
 import pandas as pd
+import shlex
 
 from .logwritter import LogWriter
 from .cursor import Cursor
@@ -99,6 +101,7 @@ class ResultTable:
         config_hash = self.get_file_hash(config_path)
         comment = "" if comment is None else comment
         cli = " ".join([f'{key}={value}' for key, value in cli.items()])
+        command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
             with self.cursor as cursor:
                 # Step 1: Check if the configuration already exists
@@ -133,14 +136,14 @@ class ResultTable:
                                            f"parameter to avoid duplicate runs or add a comment.")
                     elif run_id is not None and status == "failed":
                         # If here, the run does exist, but failed. So we will retry it
-                        self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
+                        self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
 
                     elif run_id is None:
                         # Only a debug run exists. So we need to create a new one
-                        run_id = self._create_run(experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
+                        run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
 
                 else:
-                    run_id = self._create_run(experiment_name, config_str, config_hash, cli, comment, start, commit, diff)
+                    run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
 
             if not isinstance(config_path, PurePath):
                 config_path = PurePath(config_path)
@@ -188,9 +191,9 @@ class ResultTable:
         config_hash = self.get_file_hash(config_path)
         comment = "" if comment is None else comment
         cli = " ".join([f'{key}={value}' for key, value in cli.items()])
-
+        command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
-            self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, comment, start, None, None)
+            self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, command, comment, start, None, None)
 
         if not isinstance(config_path, PurePath):
             config_path = PurePath(config_path)
@@ -350,7 +353,7 @@ class ResultTable:
         out = {}
         exp_info = {}
         with self.cursor as cursor:
-            command = "SELECT E.run_id, E.experiment, E.config, E.config_hash, E.cli, E.comment, E.start, E.status, E.commit_hash, E.diff, E.hidden, R.metric, R.value " \
+            command = "SELECT E.run_id, E.experiment, E.config, E.config_hash, E.cli, E.command, E.comment, E.start, E.status, E.commit_hash, E.diff, E.hidden, R.metric, R.value " \
                         "FROM Experiments E LEFT JOIN Results R ON E.run_id = R.run_id"
             params = []
             if run_id is not None:
@@ -372,12 +375,13 @@ class ResultTable:
                     config=row[2],
                     config_hash=row[3],
                     cli=row[4],
-                    comment=row[5],
-                    start=datetime.fromisoformat(row[6]),
-                    status=row[7],
-                    commit_hash=row[8],
-                    diff=row[9],
-                    hidden=row[10]
+                    command=row[5],
+                    comment=row[6],
+                    start=datetime.fromisoformat(row[7]),
+                    status=row[8],
+                    commit_hash=row[9],
+                    diff=row[10],
+                    hidden=row[11]
                 )
             out[run_id][metric] = value
 
@@ -448,26 +452,26 @@ class ResultTable:
         return Cursor(self.db_path, format_as_dict=True)
 
 
-    def _create_run_with_id(self, run_id: int, experiment_name: str, config_str: str, config_hash: str, cli: str,
+    def _create_run_with_id(self, run_id: int, experiment_name: str, config_str: str, config_hash: str, cli: str, command: str,
                             comment: str, start: datetime, commit: Optional[str], diff: Optional[str]):
         self._delete_run(run_id)
 
         with self.cursor as cursor:
             cursor.execute("""
-                                    INSERT INTO Experiments (run_id, experiment, config, config_hash, cli, comment, start, commit_hash, diff) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                    INSERT INTO Experiments (run_id, experiment, config, config_hash, cli, command, comment, start, commit_hash, diff) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                                     """,
-                           (run_id, experiment_name, config_str, config_hash, cli, comment, start, commit, diff))
+                           (run_id, experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff))
 
-    def _create_run(self, experiment_name: str, config_str: str, config_hash: str, cli: str,
+    def _create_run(self, experiment_name: str, config_str: str, config_hash: str, cli: str, command: str,
                             comment: str, start: datetime, commit: str, diff: str):
 
         with self.cursor as cursor:
             cursor.execute("""
-                                    INSERT INTO Experiments (experiment, config, config_hash, cli, comment, start, commit_hash, diff) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                                    INSERT INTO Experiments (experiment, config, config_hash, cli, command, comment, start, commit_hash, diff) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                                     """,
-                           (experiment_name, config_str, config_hash, cli, comment, start, commit, diff))
+                           (experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff))
             return cursor.lastrowid
 
     def _delete_run(self, run_id: int):

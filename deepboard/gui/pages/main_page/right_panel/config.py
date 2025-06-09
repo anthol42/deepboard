@@ -3,6 +3,18 @@ from datetime import datetime, timedelta
 from fasthtml.common import *
 from markupsafe import Markup
 
+def CopyToClipboard(text: str, cls):
+    return Div(
+        Span(text, cls='copy-text' + ' ' + cls),
+        Span(
+            I(cls=f'fas fa-copy copy-icon default-icon {cls}'),
+            I(cls=f'fas fa-check copy-icon check-icon {cls}'),
+            cls='copy-icon-container',
+        ),
+        onclick='copyToClipboard(this)',
+        cls='copy-container'
+    )
+
 def ConfigView(runID: int):
     from __main__ import rTable
 
@@ -15,6 +27,7 @@ def ConfigView(runID: int):
 
     # Cli
     row = rTable.fetch_experiment(runID)
+    command_line = row[5]
     if row[4] == "":
         lines = [P(Markup(""), cls="config-part")]
     else:
@@ -33,6 +46,12 @@ def ConfigView(runID: int):
             Div(
                 *lines,
                 cls="file-view",
+            ),
+
+            Div(
+                CopyToClipboard(command_line, cls=""),
+                cls="file-view",
+                style="margin-top: 2em;"
             )
         )
     )

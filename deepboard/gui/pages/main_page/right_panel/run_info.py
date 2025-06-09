@@ -51,13 +51,12 @@ def InfoView(runID: int):
     from __main__ import rTable
     # Cli
     row = rTable.fetch_experiment(runID)
-    # RunID, Exp name, cfg, cfg hash, cli, comment, start, status, commit, diff
-    start: datetime = datetime.fromisoformat(row[6])
-    status = row[7]
-    commit = row[8]
-    diff = row[9]
-    return Div(
-        Table(
+    # RunID, Exp name, cfg, cfg hash, cli, command, comment, start, status, commit, diff
+    start: datetime = datetime.fromisoformat(row[7])
+    status = row[8]
+    commit = row[9]
+    diff = row[10]
+    return (Table(
             Tr(
                 Td(H3("Start", cls="info-label")),
                 Td(H3(start.strftime("%Y-%m-%d %H:%M:%S"), cls="info-value")),
@@ -72,8 +71,7 @@ def InfoView(runID: int):
             ),
             cls="info-table",
         ),
-        DiffView(diff)
-    )
+        DiffView(diff))
 
 
 
