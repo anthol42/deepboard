@@ -1,3 +1,4 @@
+from traceback import print_tb
 from typing import *
 from .cursor import Cursor
 from datetime import datetime
@@ -6,6 +7,7 @@ import sys
 from PIL import Image
 from io import BytesIO
 import matplotlib.pyplot as plt
+import hashlib
 
 class LogWriter:
     """
@@ -47,6 +49,7 @@ class LogWriter:
         self.image_buffer = {}
         self.auto_image_step = {}
         self.image_log_count = {}
+        self.fig_ids = set()
 
         self.enabled = True
         self.run_rep = 0
@@ -190,14 +193,19 @@ class LogWriter:
 
 
     def detect_and_log_figures(self, step: Optional[int] = None, split: Optional[str] = None,
-                               epoch: Optional[int] = None):
+                               epoch: Optional[int] = None, flush: bool = False):
         """
         Detect matplotlib figures that are currently open and log them to the result table. (Save them as png).
+        :param step: The global step at which the image was generated. If None, the maximum step is taken from all global
+        steps.
+        :param split: The split in which the images were generated.
+        :param epoch: The epoch at which the images were generated. If None, no epoch is saved.
+        :param flush: If True, flush all data in memory to the database.
         :return: None
         """
         if step is None:
             # Take the max step from scalars
-            step = max(self.global_step.values())
+            step = max(self.global_step.values()) if self.global_step else 0
 
         for num in plt.get_fignums():
             fig = plt.figure(num)
@@ -206,12 +214,30 @@ class LogWriter:
             # Save it as bytes
             buffer = BytesIO()
             fig.savefig(buffer, format='png')
+            buffer.seek(0)
+            fig_hash = hashlib.sha256(buffer.read()).hexdigest()
+            if fig_hash in self.fig_ids:
+                # If we already logged this figure, skip it
+                continue
+            self.fig_ids.add(fig_hash)
             img_bytes = buffer.getvalue()
 
             self._log_image(img_bytes, step, split, self.run_rep, epoch, type="PLOT")
 
+        if flush:
+            self._flush_all()
+
     def read_figures(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
                     repetition: Optional[int] = None):
+        """
+        Return all figures logged in the run with the given step, split and/or epoch.
+        :param id: The id of the figure to read. If None, all figures are returned.
+        :param step: The step at which the figure was generated. If None, all figures are returned.
+        :param split: The split in which the figures were generated. If None, all splits are returned.
+        :param epoch: The epoch at which the figures were generated. If None, all epochs are returned.
+        :param repetition: The repetition of the figures. If None, all figures are returned.
+        :return:
+        """
         return self._get_images(id, step, split, epoch, repetition, img_type="PLOT")
 
     def add_hparams(self, **kwargs):

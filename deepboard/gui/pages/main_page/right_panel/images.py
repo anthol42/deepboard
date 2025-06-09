@@ -1,8 +1,12 @@
 from fasthtml.common import *
 from starlette.responses import Response
+from typing import *
 
-def _get_images_groups(socket):
-    images = socket.read_images()
+def _get_images_groups(socket, type: Literal["IMAGE", "PLOT"]):
+    if type == "IMAGE":
+        images = socket.read_images()
+    else:
+        images = socket.read_figures()
 
     index = list({(img["step"], img["epoch"], img["run_rep"], img["split"]) for img in images})
 
@@ -23,16 +27,18 @@ def _get_images_groups(socket):
     # Sort image groups by step, and run_rep
     return dict(sorted(images_groups.items(), key=lambda x: (x[0][0], x[0][2])))
 
-def SplitSelector(runID, available_splits: List[str], selected: str, step: int, epoch: int, run_rep: int, swap: bool = False):
+def SplitSelector(runID, available_splits: List[str], selected: str, step: int, epoch: int, run_rep: int,
+                  img_type: Literal["IMAGE", "PLOT"], swap: bool = False):
+
     swap_oob = dict(swap_oob="true") if swap else {}
     return Select(
         *[
-            Option(split.capitalize(), value=split, selected=selected == split, cls="artefact-split-option")
+            Option(split.capitalize() if split else "", value=split, selected=selected == split, cls="artefact-split-option")
             for split in available_splits
         ],
         id=f"images-split-select",
         name="split_select",
-        hx_get=f"/images/change_split?runID={runID}&step={step}&epoch={epoch}&run_rep={run_rep}",
+        hx_get=f"/images/change_split?runID={runID}&step={step}&epoch={epoch}&run_rep={run_rep}&img_type={img_type}",
         hx_target=f"#image-card-{step}-{epoch}-{run_rep}",
         hx_trigger="change",
         hx_swap="outerHTML",
@@ -71,11 +77,12 @@ def ImageGroup(images_id: List[int]):
     )
 
 
-def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, selected: Optional[str] = None):
+def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, img_type: Literal["IMAGE", "PLOT"],
+              selected: Optional[str] = None):
     from __main__ import rTable
 
     socket = rTable.load_run(runID)
-    data = _get_images_groups(socket)
+    data = _get_images_groups(socket, type=img_type)
 
     if (step, epoch, run_rep) not in data:
         avail_splits = []
@@ -90,7 +97,7 @@ def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, selecte
 
     return Div(
         Div(
-            SplitSelector(runID, avail_splits, selected=selected, step=step, epoch=epoch, run_rep=run_rep),
+            SplitSelector(runID, avail_splits, selected=selected, step=step, epoch=epoch, run_rep=run_rep, img_type=img_type),
             Div(
                 StatLine("Step", str(step)),
                 StatLine("Epoch", str(epoch) if epoch is not None else "N/A"),
@@ -104,14 +111,14 @@ def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, selecte
         cls="artefact-card",
     )
 
-def ImageTab(session, runID, swap: bool = False):
+def ImageTab(session, runID, type: Literal["IMAGE", "PLOT"], swap: bool = False):
     from __main__ import rTable
     socket = rTable.load_run(runID)
 
-    images_groups = _get_images_groups(socket)
+    images_groups = _get_images_groups(socket, type=type)
     return Div(
         *[
-            ImageCard(runID, step, epoch, run_rep)
+            ImageCard(runID, step, epoch, run_rep, img_type=type)
             for step, epoch, run_rep in images_groups.keys()
         ],
         style="display; flex; width: 40vw; flex-direction: column; align-items: center; justify-content: center;",
@@ -120,7 +127,7 @@ def ImageTab(session, runID, swap: bool = False):
     )
 
 
-def images_enable(runID):
+def images_enable(runID, type: Literal["IMAGES", "PLOT"]):
     """
     Check if some scalars are logged and available for the runID. If not, we consider disable it.
     :param runID: The runID to check.
@@ -128,7 +135,10 @@ def images_enable(runID):
     """
     from __main__ import rTable
     socket = rTable.load_run(runID)
-    return len(socket.read_images()) > 0
+    if type == "IMAGES":
+        return len(socket.read_images()) > 0
+    else:
+        return len(socket.read_figures()) > 0
 
 # routes
 def build_images_routes(rt):
@@ -136,7 +146,7 @@ def build_images_routes(rt):
     rt("/images/id={image_id}")(load_image)
 
 
-def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: int, split_select: str):
+def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: int, split_select: str, img_type: str):
     """
     Change the split for the images.
     :param session: The session object.
@@ -151,6 +161,7 @@ def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: 
         step,
         epoch,
         run_rep,
+        img_type=img_type,
         selected=split_select,
     )
 

@@ -16,17 +16,23 @@ def reset_scalar_session(session):
 def RightPanelContent(session, run_id: int, active_tab: str):
     from __main__ import rTable
     scalar_is_available = scalar_enable(run_id)
-    images_is_available = images_enable(run_id)
+    images_is_available = images_enable(run_id, type="IMAGES")
+    plot_is_available = images_enable(run_id, type="PLOT")
+
     # Verify that the active tab requested is availalable
     if active_tab == 'scalars' and not scalar_is_available:
-        active_tab = "config"
-    elif active_tab == "images" and not images_is_available:
+        active_tab = "images"
+    if active_tab == "images" and not images_is_available:
+        active_tab = "figures"
+    if active_tab == "figures" and not plot_is_available:
         active_tab = "config"
 
     if active_tab == 'scalars':
         tab_content = ScalarTab(session, run_id)
     elif active_tab == 'images':
-        tab_content = ImageTab(session, run_id)
+        tab_content = ImageTab(session, run_id, type="IMAGE")
+    elif active_tab == 'figures':
+        tab_content = ImageTab(session, run_id, type="PLOT")
     elif active_tab == 'config':
         tab_content = ConfigView(run_id)
     elif active_tab == 'hparams':
@@ -52,6 +58,13 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         tabs.append(
             Div('Images', cls='tab active' if active_tab == 'images' else 'tab',
                 hx_get=f'/fillpanel?run_id={run_id}&tab=images', hx_target='#right-panel-content',
+                hx_swap='outerHTML')
+        )
+
+    if plot_is_available:
+        tabs.append(
+            Div('Figures', cls='tab active' if active_tab == 'figures' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=figures', hx_target='#right-panel-content',
                 hx_swap='outerHTML')
         )
 

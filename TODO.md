@@ -5,10 +5,10 @@
 - [X] Add an option to display chart with a log scale in the GUI
 - [X] When a tab has nothing (image, plot, text, scalars, etc), it should not be displayed in the GUI
 - [X] Add cli command used to launch the script
-- [ ] Log images and matplotlib plots
+- [X] Log images and matplotlib plots
   - [X] Image support in result Table
   - [X] Image tab in right panel
   - [X] Autolog matplotlib plots in the result table
-  - [ ] Fig tab in right panel
+  - [X] Fig tab in right panel
 - [ ] Log text and html fragments
 - [ ] Possibility to install only ResultTable and no GUI (because cannot install fast-html when python has no GIL)
