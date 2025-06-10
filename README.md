@@ -69,8 +69,14 @@ If you're feeling a bit overwhelmed or would like a project example, the
 default template implements this philosophy, including the resultTable, making it a great starting point! 🚀
 
 ## 🛠️ Installation
+To install only the `resultTable` module, which allows you to log your results inside a single file, you can run:
 ```shell
 pip install deepboard
+```
+
+To also install the `GUI` module, which allows you to visualize your results in a web UI, you can run:
+```shell
+pip install deepboard[full]
 ```
 
 ## 🚀 How to Use
