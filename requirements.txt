@@ -1,8 +1,0 @@
-setuptools
-pandas
-python-fasthtml
-fh-plotly
-MarkupSafe
-twine
-pillow
-matplotlib

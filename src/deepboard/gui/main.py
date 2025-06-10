@@ -11,7 +11,7 @@ from deepboard.gui.components import Modal
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
 
-DEBUG = True
+DEBUG = False
 # Create config files to customize the UI
 initiate_files()
 
