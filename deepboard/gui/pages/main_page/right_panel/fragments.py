@@ -88,7 +88,7 @@ def FragmentTab(session, runID, type: Literal["RAW", "HTML"], swap: bool = False
             FragmentCard(runID, step, epoch, run_rep, frag_type=type)
             for step, epoch, run_rep in fragment_groups.keys()
         ],
-        style="display; flex; width: 40vw; flex-direction: column; align-items: center; justify-content: center;",
+        style="display; flex; flex-direction: column; align-items: center; justify-content: center;",
         id="fragment-tab",
         hx_swap_oob="true" if swap else None,
     )

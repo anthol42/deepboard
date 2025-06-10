@@ -36,8 +36,8 @@
     display: flex;
     height: 100%;
     width: 100%;
-    justify-content: left;
-    padding-left: 4rem;
+    max-width: 49vw;
+    justify-content: right;
     padding-top: 2rem;
 }
 
@@ -52,6 +52,8 @@ margin: 0;
   display: flex;
   margin-bottom: 0;
   margin-top: 1rem;
+  max-width: 98%;
+  overflow-x: auto;
 }
 
 .tab {
@@ -61,7 +63,6 @@ margin: 0;
   color: var(--sp-color);
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  margin-right: 4px;
   transition: background-color 0.2s ease;
 }
 
@@ -79,10 +80,9 @@ margin: 0;
   border-top: none;
   border-radius: 0 10px 10px 10px;
   color: var(--sp-color);
-  width: 100%;
-  max-width: 42vw;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .right-panel-content{

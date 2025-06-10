@@ -16,4 +16,6 @@
  - [X] HTML tab in right panel
  - [X] Text tab in right panel
 - [X] Zoom in modal when click image or figure
+- [X] Scrollable tabs
+- [X] Fix view (Maybe)
 - [ ] Possibility to install only ResultTable and no GUI (because cannot install fast-html when python has no GIL)

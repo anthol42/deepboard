@@ -50,7 +50,6 @@ This css file contains classes for all artefacts tabs:
     border-radius: var(--artefacts-card-radius);
     display: flex;
     flex-direction: column;
-    width: 100%;
     /*Margin top: 1em and bottom: 1em. 0 otherwise*/
     margin-bottom: 2em;
 }
@@ -73,8 +72,8 @@ This css file contains classes for all artefacts tabs:
 }
 
 .interactive-image-container{
-    width: 80vw;
-    height: 85vh;
+    width: 92vw;
+    height: 100vh;
     overflow: hidden;
     margin: 20px auto;
     background: inherit;
