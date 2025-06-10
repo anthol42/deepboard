@@ -89,7 +89,8 @@ class ResultTable:
         log every step to save space and speed up the process. This parameter controls every how many step we store the
         log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
         :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
-        it checks only when a method on the socket is called.
+        it checks only when a method on the socket is called. It is better to log them manually because you can set the
+        appropriate step, epoch and split.
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
@@ -190,7 +191,8 @@ class ResultTable:
         log every step to save space and speed up the process. This parameter controls every how many step we store the
         log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
         :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
-        it checks only when a method on the socket is called.
+        it checks only when a method on the socket is called. It is better to log them manually because you can set the
+        appropriate step, epoch and split.
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
