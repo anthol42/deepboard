@@ -516,7 +516,7 @@ class ResultTable:
             # Delete logs
             cursor.execute("DELETE FROM Logs WHERE run_id=?", (run_id,))
             cursor.execute("DELETE FROM Images WHERE run_id=?", (run_id,))
-            cursor.execute("DELETE FROM Artefacts WHERE run_id=?", (run_id,))
+            cursor.execute("DELETE FROM Fragments WHERE run_id=?", (run_id,))
             # Delete results
             cursor.execute("DELETE FROM Results WHERE run_id=?", (run_id,))
 

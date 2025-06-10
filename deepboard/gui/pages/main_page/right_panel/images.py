@@ -1,7 +1,7 @@
 from fasthtml.common import *
 from starlette.responses import Response
 from typing import *
-from deepboard.gui.components import Modal
+from deepboard.gui.components import Modal, SplitSelector, StatLine, ArtefactGroup
 
 def _get_images_groups(socket, type: Literal["IMAGE", "PLOT"]):
     if type == "IMAGE":
@@ -28,32 +28,6 @@ def _get_images_groups(socket, type: Literal["IMAGE", "PLOT"]):
     # Sort image groups by step, and run_rep
     return dict(sorted(images_groups.items(), key=lambda x: (x[0][0], x[0][2])))
 
-def SplitSelector(runID, available_splits: List[str], selected: str, step: int, epoch: int, run_rep: int,
-                  img_type: Literal["IMAGE", "PLOT"], swap: bool = False):
-
-    swap_oob = dict(swap_oob="true") if swap else {}
-    return Select(
-        *[
-            Option(split.capitalize() if split else "", value=split, selected=selected == split, cls="artefact-split-option")
-            for split in available_splits
-        ],
-        id=f"images-split-select",
-        name="split_select",
-        hx_get=f"/images/change_split?runID={runID}&step={step}&epoch={epoch}&run_rep={run_rep}&img_type={img_type}",
-        hx_target=f"#image-card-{step}-{epoch}-{run_rep}",
-        hx_trigger="change",
-        hx_swap="outerHTML",
-        hx_params="*",
-        **swap_oob,
-        cls="artefact-split-select",
-    )
-
-def StatLine(label: str, value: str):
-    return Span(
-        H3(f"{label}: ", style="font-size: 1em; margin: 0.1em; margin-right: 0.5em; font-weight: bold;"),
-        H3(value, style="font-size: 1em; margin: 0.1em; font-weight: normal;"),
-        cls="expand"
-    )
 
 def ImageComponent(image_id: int):
     """
@@ -134,16 +108,6 @@ function getDistance(touch1, touch2) {
     )
     )
 
-def ImageGroup(images_id: List[int]):
-    """
-    Create a group of images in a flex container that adapts to the number of images.
-    :param images: List of PIL Image objects.
-    :return: Div containing the images.
-    """
-    return Div(
-        *[ImageComponent(image_id) for image_id in images_id],
-        cls="artefact-group-container",
-    )
 
 
 def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, img_type: Literal["IMAGE", "PLOT"],
@@ -166,7 +130,8 @@ def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, img_typ
 
     return Div(
         Div(
-            SplitSelector(runID, avail_splits, selected=selected, step=step, epoch=epoch, run_rep=run_rep, img_type=img_type),
+            SplitSelector(runID, avail_splits, selected=selected, step=step, epoch=epoch, run_rep=run_rep,
+                          type=img_type, path="/images/change_split"),
             Div(
                 StatLine("Step", str(step)),
                 StatLine("Epoch", str(epoch) if epoch is not None else "N/A"),
@@ -175,8 +140,8 @@ def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, img_typ
             ),
             cls="artefact-card-header",
         ),
-        ImageGroup(images),
-        id=f"image-card-{step}-{epoch}-{run_rep}",
+        ArtefactGroup(*[ImageComponent(image_id) for image_id in images]),
+        id=f"artefact-card-{step}-{epoch}-{run_rep}",
         cls="artefact-card",
     )
 
@@ -216,7 +181,7 @@ def build_images_routes(rt):
     rt("/images/open_modal")(open_image_modal)
 
 
-def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: int, split_select: str, img_type: str):
+def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: int, split_select: str, type: str):
     """
     Change the split for the images.
     :param session: The session object.
@@ -224,6 +189,7 @@ def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: 
     :param epoch: The epoch of the images.
     :param run_rep: The run repetition of the images.
     :param split: The split to change to.
+    :param type: The type of split to change.
     :return: The updated image card HTML.
     """
     return ImageCard(
@@ -231,7 +197,7 @@ def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: 
         step,
         epoch,
         run_rep,
-        img_type=img_type,
+        img_type=type,
         selected=split_select,
     )
 

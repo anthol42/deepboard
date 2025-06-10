@@ -255,7 +255,7 @@ class LogWriter:
         """
         return self._get_fragments(id, step, split, epoch, repetition, fragment_type="RAW")
 
-    def add_html(self, content: str, step: Optional[int] = None, split: Optional[str] = None,
+    def add_fragment(self, content: str, step: Optional[int] = None, split: Optional[str] = None,
                   epoch: Optional[int] = None, flush: bool = False):
         """
         Add a html fragment to the resultTable
@@ -276,7 +276,7 @@ class LogWriter:
         if flush:
             self._flush_all()
 
-    def read_html(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None,
+    def read_fragment(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None,
                   epoch: Optional[int] = None, repetition: Optional[int] = None):
         """
         Return all html fragments logged in the run with the given id, step, split and/or epoch.
@@ -425,7 +425,7 @@ class LogWriter:
 
     def _get_fragments(self, id: Optional[int], step: Optional[int], split: Optional[str], epoch: Optional[int],
                     repetition: Optional[int], fragment_type: Literal["RAW", "HTML"]) -> List[dict]:
-        command = f"SELECT id_, step, epoch, run_rep, split, artefact FROM Artefacts WHERE run_id=? AND artefact_type='{fragment_type}'"
+        command = f"SELECT id_, step, epoch, run_rep, split, fragment FROM Fragments WHERE run_id=? AND fragment_type='{fragment_type}'"
         params = [self.run_id]
         if id is not None:
             command += " AND id_=?"
@@ -543,8 +543,8 @@ class LogWriter:
         :param type: Raw (for text only) or HTML (for html content)
         :return: None
         """
-        if split not in self.image_buffer:
-            self.image_buffer[split] = []
+        if split not in self.fragments_buffer:
+            self.fragments_buffer[split] = []
 
         self.fragments_buffer[split].append((self.run_id, step, epoch, repetition, type, split, fragment))
 
@@ -602,7 +602,7 @@ class LogWriter:
 
     def _flush_fragment(self, split):
         query = """
-                INSERT INTO Artefacts (run_id, step, epoch, run_rep, img_type, split, artefact)
+                INSERT INTO Fragments (run_id, step, epoch, run_rep, fragment_type, split, fragment)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """
         if not self.disable:

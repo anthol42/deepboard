@@ -2,6 +2,7 @@ from fasthtml.common import *
 from datetime import datetime
 from .scalars import ScalarTab, scalar_enable
 from .images import ImageTab, images_enable
+from .fragments import FragmentTab, fragment_enable
 from .config import ConfigView
 from .hparams import HParamsView
 from .run_info import InfoView
@@ -18,6 +19,9 @@ def RightPanelContent(session, run_id: int, active_tab: str):
     scalar_is_available = scalar_enable(run_id)
     images_is_available = images_enable(run_id, type="IMAGES")
     plot_is_available = images_enable(run_id, type="PLOT")
+    text_is_available = fragment_enable(run_id, type="RAW")
+    fragment_is_available = fragment_enable(run_id, type="HTML")
+
 
     # Verify that the active tab requested is availalable
     if active_tab == 'scalars' and not scalar_is_available:
@@ -25,6 +29,10 @@ def RightPanelContent(session, run_id: int, active_tab: str):
     if active_tab == "images" and not images_is_available:
         active_tab = "figures"
     if active_tab == "figures" and not plot_is_available:
+        active_tab = "text"
+    if active_tab == "text" and not text_is_available:
+        active_tab = "fragments"
+    if active_tab == "fragments" and not fragment_is_available:
         active_tab = "config"
 
     if active_tab == 'scalars':
@@ -33,6 +41,10 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         tab_content = ImageTab(session, run_id, type="IMAGE")
     elif active_tab == 'figures':
         tab_content = ImageTab(session, run_id, type="PLOT")
+    elif active_tab == 'text':
+        tab_content = FragmentTab(session, run_id, type="RAW")
+    elif active_tab == 'fragments':
+        tab_content = FragmentTab(session, run_id, type="HTML")
     elif active_tab == 'config':
         tab_content = ConfigView(run_id)
     elif active_tab == 'hparams':
@@ -65,6 +77,20 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         tabs.append(
             Div('Figures', cls='tab active' if active_tab == 'figures' else 'tab',
                 hx_get=f'/fillpanel?run_id={run_id}&tab=figures', hx_target='#right-panel-content',
+                hx_swap='outerHTML')
+        )
+
+    if text_is_available:
+        tabs.append(
+            Div('Text', cls='tab active' if active_tab == 'text' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=text', hx_target='#right-panel-content',
+                hx_swap='outerHTML')
+        )
+
+    if fragment_is_available:
+        tabs.append(
+            Div('Fragments', cls='tab active' if active_tab == 'fragments' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=fragments', hx_target='#right-panel-content',
                 hx_swap='outerHTML')
         )
 

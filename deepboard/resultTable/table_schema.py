@@ -71,16 +71,16 @@ def create_database(db_path):
     """)
     # Create a table to store text data
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS Artefacts
+    CREATE TABLE IF NOT EXISTS Fragments
     (
         id_ INTEGER PRIMARY KEY AUTOINCREMENT,
         run_id INTEGER NOT NULL,
         step INTEGER NOT NULL,
         epoch INTEGER,
         run_rep INTEGER NOT NULL,
-        artefact_type varchar(64) NOT NULL, -- RAW or HTML
+        fragment_type varchar(64) NOT NULL, -- RAW or HTML
         split varchar(128),
-        artefact text NOT NULL,
+        fragment text NOT NULL,
         FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
     );
     """)
