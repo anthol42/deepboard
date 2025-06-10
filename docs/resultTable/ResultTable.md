@@ -52,6 +52,19 @@ get_hidden_runs(self) -> List[int]
 
 **Return:**
 - A list of run ids associated to hidden runs.
+## Method: `get_image_by_id()`
+
+```python
+get_image_by_id(self, image_id: int) -> Optional[PIL.Image.Image]
+```
+
+**Description:** If the image_id is valid, it will return the image as a PIL Image object.
+
+**Parameters:**
+- `image_id`: The id of the image to fetch.
+
+**Return:**
+- The image as a PIL Image object or None if the image_id is not valid.
 ## Method: `get_results()`
 
 ```python
@@ -121,7 +134,7 @@ load_run(self, run_id) -> deepboard.resultTable.logwritter.LogWriter
 ## Method: `new_debug_run()`
 
 ```python
-new_debug_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath], cli: dict, comment: Optional[str] = None, flush_each: int = 10, keep_each: int = 1) -> deepboard.resultTable.logwritter.LogWriter
+new_debug_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath], cli: dict, comment: Optional[str] = None, flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
 ```
 
 **Description:** Create a new DEBUG socket to log the results. The results will be entered in the result table, but as the runID -1.
@@ -131,39 +144,25 @@ adding too many rows to the table when testing the code or debugging.
 Note:
     It will not log the git diff or git hash
 
-
-
-
-
-
-log every step to save space and speed up the process. This parameter controls every how many step we store the
-log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
-
 **Parameters:**
 - `experiment_name`: The name of the current experiment
 - `config_path`: The path to the configuration path
 - `cli`: The cli arguments
 - `comment`: The comment, if any
 - `flush_each`: Every how many logs does the logger save them to the database?
-- `keep_each`: If the training has a lot of steps, it might be preferable to not
+- `keep_each`: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+- `auto_log_plt`: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
+- `disable`: If true, disable the logwriter, meaning that nothing will be written to the database.
 
 **Return:**
 - The log writer
 ## Method: `new_run()`
 
 ```python
-new_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath], cli: dict, comment: Optional[str] = None, flush_each: int = 10, keep_each: int = 1) -> deepboard.resultTable.logwritter.LogWriter
+new_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath], cli: dict, comment: Optional[str] = None, flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
 ```
 
 **Description:** Create a new logwritter object bound to a run entry in the table. Think of it as a socket.
-
-
-
-
-
-
-log every step to save space and speed up the process. This parameter controls every how many step we store the
-log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
 
 **Parameters:**
 - `experiment_name`: The name of the current experiment
@@ -171,7 +170,9 @@ log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 
 - `cli`: The cli arguments
 - `comment`: The comment, if any
 - `flush_each`: Every how many logs does the logger save them to the database?
-- `keep_each`: If the training has a lot of steps, it might be preferable to not
+- `keep_each`: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+- `auto_log_plt`: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
+- `disable`: If true, disable the logwriter, meaning that nothing will be written to the database.
 
 **Return:**
 - The log writer
@@ -194,10 +195,8 @@ set_column_order(self, columns: Dict[str, Optional[int]])
 
 **Description:** Set the order of the column in the result table. If order is None, it will be set to NULL
 
-If the order is None, it will be set to NULL and be hidden
-
 **Parameters:**
-- `columns`: A dict of column name and their order. The order is the index of the column in the table.
+- `columns`: A dict of column name and their order. The order is the index of the column in the table. If the order is None, it will be set to NULL and be hidden
 
 ## Method: `show_column()`
 

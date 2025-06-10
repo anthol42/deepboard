@@ -85,12 +85,8 @@ class ResultTable:
         :param cli: The cli arguments
         :param comment: The comment, if any
         :param flush_each: Every how many logs does the logger save them to the database?
-        :param keep_each: If the training has a lot of steps, it might be preferable to not
-        log every step to save space and speed up the process. This parameter controls every how many step we store the
-        log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
-        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
-        it checks only when a method on the socket is called. It is better to log them manually because you can set the
-        appropriate step, epoch and split.
+        :param keep_each: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
@@ -187,12 +183,8 @@ class ResultTable:
         :param cli: The cli arguments
         :param comment: The comment, if any
         :param flush_each: Every how many logs does the logger save them to the database?
-        :param keep_each: If the training has a lot of steps, it might be preferable to not
-        log every step to save space and speed up the process. This parameter controls every how many step we store the
-        log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
-        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
-        it checks only when a method on the socket is called. It is better to log them manually because you can set the
-        appropriate step, epoch and split.
+        :param keep_each: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
+        :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
@@ -284,8 +276,7 @@ class ResultTable:
     def set_column_order(self, columns: Dict[str, Optional[int]]):
         """
         Set the order of the column in the result table. If order is None, it will be set to NULL
-        :param columns: A dict of column name and their order. The order is the index of the column in the table.
-        If the order is None, it will be set to NULL and be hidden
+        :param columns: A dict of column name and their order. The order is the index of the column in the table. If the order is None, it will be set to NULL and be hidden
         :return: None
         """
         with self.cursor as cursor:
