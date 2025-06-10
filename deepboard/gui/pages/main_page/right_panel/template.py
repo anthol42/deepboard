@@ -117,7 +117,7 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         id="right-panel-content"
     ),
 
-def OpenPanel(session, run_id: int, active_tab: str = 'images'):
+def OpenPanel(session, run_id: int, active_tab: str = 'scalars'):
     return Div(
         RightPanelContent(session, run_id, active_tab),
         cls="open-right-panel"

@@ -72,6 +72,8 @@
     --artefacts-card-radius: 8px;
     --artefacts-header-line: 2px solid #333;
     --artefacts-image_size: 10em;
+    --artefacts-text-color: var(--secondary-text-color);
+    --artefacts-text-font: monospace;
 
     /*Compare page*/
     --cmp-card-bg: #2a2a2a;
