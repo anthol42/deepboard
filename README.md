@@ -11,6 +11,9 @@ between runs. You can even download the charts that you have generated:)
 
 
 ![](./assets/compare_view.png)
+
+
+![](./assets/full_table_view.png)
 ## 🌟 Project Philosophy
 Before diving in, it’s important to understand the philosophy behind this project. In deep learning, it’s easy to get 
 swept up in the excitement — experimenting with countless configurations in search of the perfect setup. 🔬✨ 
