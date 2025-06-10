@@ -69,6 +69,21 @@ def create_database(db_path):
         FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
     );
     """)
+    # Create a table to store text data
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Artefacts
+    (
+        id_ INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        step INTEGER NOT NULL,
+        epoch INTEGER,
+        run_rep INTEGER NOT NULL,
+        artefact_type varchar(64) NOT NULL, -- RAW or HTML
+        split varchar(128),
+        artefact text NOT NULL,
+        FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
+    );
+    """)
     # Display Table
     # This table stores every column of Results, their order and whether they displayed or not
     # If order is Null, it means that the column is not displayed
