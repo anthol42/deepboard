@@ -1,8 +1,8 @@
 [project]
 name = "deepboard"
-version = "0.2.0"
+version = "0.2.1"
 description = "Organize your research project like a pro with Deepboard"
-readme = "README.md"
+readme = "README_pypi.md"
 authors = [
     { name = "Anthony Lavertu", email = "alavertu2@gmail.com" }
 ]

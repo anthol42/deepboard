@@ -12,6 +12,7 @@ def CopyToClipboard(text: str, cls):
             cls='copy-icon-container',
         ),
         onclick='copyToClipboard(this)',
+        style="width: 100%;",
         cls='copy-container'
     )
 

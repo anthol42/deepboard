@@ -1,3 +1,6 @@
+## 0.2.1
+- Images now display in Pypi
+- Copy icon now looks better (add a class that had width=100% and wasn't supposed to)
 ## 0.2.0
 ### Bug Fixes
 - Table now support inf and NaN values: They are displayed as 'inf' and 'NaN' in the table
