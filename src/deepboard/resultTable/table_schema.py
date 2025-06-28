@@ -38,6 +38,7 @@ def create_database(db_path):
 
     # Create Logs table for scalar values
     # Wall time is in seconds
+    # We must allow NULL values for the value column when the value is NaN
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Logs
     (
@@ -47,7 +48,7 @@ def create_database(db_path):
        step INTEGER NOT NULL,
        split varchar (128) NOT NULL,
        label varchar(128) NOT NULL,
-       value REAL NOT NULL,
+       value REAL,
        wall_time REAL NOT NULL,
        run_rep INTEGER NOT NULL,
        FOREIGN KEY(run_id) REFERENCES Experiments(run_id)

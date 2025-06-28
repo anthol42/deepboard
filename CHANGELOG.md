@@ -1,3 +1,5 @@
+## 0.2.2
+- Fix a bug when the scalar logs where nan, it was crashing.
 ## 0.2.1
 - Images now display in Pypi
 - Copy icon now looks better (add a class that had width=100% and wasn't supposed to)
