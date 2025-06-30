@@ -117,7 +117,7 @@ class ResultTable:
                 """, (experiment_name, config_str, config_hash, cli, comment))
                 result = cursor.fetchall()
                 if result is not None:
-                    status = [res[7] for res in result]
+                    status = [res[8] for res in result]
                     run_id = [res[0] for res in result]
 
                     # We ignore debug runs

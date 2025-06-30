@@ -10,6 +10,14 @@ from deepboard.gui.pages import _not_found
 from deepboard.gui.components import Modal
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--port", type=int, default=5001, help="Port to run the server on")
+parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to run the server on")
+
+args = parser.parse_args()
 
 DEBUG = False
 # Create config files to customize the UI
@@ -90,4 +98,4 @@ def get(session, elementIds: str, top: int, left: int):
 
 build_main_page_endpoints(rt)
 build_compare_routes(rt)
-serve(reload=DEBUG)
+serve(reload=DEBUG, host=args.host, port=args.port)

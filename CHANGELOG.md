@@ -1,3 +1,5 @@
+## 0.2.3
+- Fix a bug when a run had failed, we couldn't re-run it.
 ## 0.2.2
 - Fix a bug when the scalar logs where nan, it was crashing.
 ## 0.2.1
