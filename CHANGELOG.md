@@ -1,3 +1,9 @@
+## 0.3.0
+### New features
+- Now can change the port and listening address of the GUI server
+- Now can log hyperparameters with NULL values
+### Fixed bugs
+
 ## 0.2.3
 - Fix a bug when a run had failed, we couldn't re-run it.
 ## 0.2.2

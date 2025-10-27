@@ -30,7 +30,7 @@ def create_database(db_path):
             id_ INTEGER PRIMARY KEY AUTOINCREMENT,
             run_id INTEGER NOT NULL,
             metric varchar(128) NOT NULL,
-            value NOT NULL,
+            value,
             is_hparam INTEGER DEFAULT 0,
             FOREIGN KEY (run_id) REFERENCES Experiments(run_id)
         );

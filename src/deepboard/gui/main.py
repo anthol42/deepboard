@@ -16,6 +16,17 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--port", type=int, default=5001, help="Port to run the server on")
 parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to run the server on")
+# Positional
+parser.add_argument(
+        "table_path",
+        nargs="?",  # Make it optional positionally
+        help="Path to the result table db file"
+    )
+# Optional keyword argument --table_path
+parser.add_argument(
+    "--table_path",
+    help="Path to the result table db file"
+)
 
 args = parser.parse_args()
 
@@ -25,7 +36,8 @@ initiate_files()
 
 # Load config and DB
 CONFIG = Config.FromFile(os.path.expanduser('~/.config/deepboard/THEME.yml'))
-DATABASE = get_table_path_from_cli()
+DATABASE = args.table_path or args.__dict__.get("table_path") or "results/result_table.db"
+
 if not os.path.exists(DATABASE):
     raise RuntimeError(f"ResultTable {DATABASE} does not exist")
 prepare_db()
