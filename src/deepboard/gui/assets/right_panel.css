@@ -93,6 +93,15 @@ height: 80vh;
 .info-table {
 border-collapse: collapse;
   width: 100%;
+  background-color: transparent;
+  box-shadow: none;
+}
+.info-table tr:nth-child(even) {
+  background-color: transparent;
+}
+
+.info-table tr:hover {
+  background-color: transparent;
 }
 
 .info-table tr {
