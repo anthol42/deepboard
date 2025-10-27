@@ -83,8 +83,8 @@ class ResultTable:
             raise RuntimeError(msg)
 
     def new_run(self, experiment_name: str,
-                config_path: Union[str, PurePath],
-                cli: dict,
+                config_path: Optional[Union[str, PurePath]] = None,
+                cli: Optional[dict] = None,
                 comment: Optional[str] = None,
                 flush_each: int = 10,
                 keep_each: int = 1,
@@ -112,10 +112,10 @@ class ResultTable:
 
         commit = get_last_commit()
         start = datetime.now()
-        config_str = str(config_path)
-        config_hash = self.get_file_hash(config_path)
+        config_str = None if config_path is None else str(config_path)
+        config_hash = None if config_path is None else self.get_file_hash(config_path)
         comment = "" if comment is None else comment
-        cli = " ".join([f'{key}={value}' for key, value in cli.items()])
+        cli = " ".join([f'{key}={value}' for key, value in cli.items()]) if cli is not None else ""
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
             with self.cursor as cursor:
@@ -176,8 +176,8 @@ class ResultTable:
                          disable=disable, auto_log_plt=auto_log_plt)
 
     def new_debug_run(self, experiment_name: str,
-                config_path: Union[str, PurePath],
-                cli: dict,
+                config_path: Optional[Union[str, PurePath]] = None,
+                cli: Optional[dict] = None,
                 comment: Optional[str] = None,
                 flush_each: int = 10,
                 keep_each: int = 1,
@@ -203,24 +203,27 @@ class ResultTable:
         """
 
         start = datetime.now()
-        config_str = str(config_path)
-        config_hash = self.get_file_hash(config_path)
+        config_str = None if config_path is None else str(config_path)
+        config_hash = None if config_path is None else self.get_file_hash(config_path)
         comment = "" if comment is None else comment
-        cli = " ".join([f'{key}={value}' for key, value in cli.items()])
+        cli = "" if cli is None else " ".join([f'{key}={value}' for key, value in cli.items()])
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
             self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, command, comment, start, None, None)
 
-        if not isinstance(config_path, PurePath):
-            config_path = PurePath(config_path)
-        config_name = config_path.name
+        # TODO: Change this ⬇⬇
+        if config_path is not None:
+            if not isinstance(config_path, PurePath):
+                config_path = PurePath(config_path)
+            config_name = config_path.name
 
-        extension = config_name.split(".")[-1]
-        shutil.copy(config_path, self.configs_path / f'{-1}.{extension}')
+            extension = config_name.split(".")[-1]
+            shutil.copy(config_path, self.configs_path / f'{-1}.{extension}')
 
         return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable,
                          auto_log_plt=auto_log_plt)
 
+    # TODO: Change this ⬇⬇
     def load_config(self, run_id: int) -> str:
         """
         Load the configuration file of a given run id
@@ -230,6 +233,8 @@ class ResultTable:
         valid_files = glob(str(self.configs_path / f"{run_id}.*"))
         if len(valid_files) > 1:
             print(f"Warning: More than one configuration file found for run {run_id}. ")
+        if len(valid_files) == 0:
+            return ""
         with open(valid_files[0], 'r') as f:
             content = f.read()
         return content

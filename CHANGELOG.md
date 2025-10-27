@@ -2,6 +2,7 @@
 ### New features
 - Now deepboard automatically checks if the resultTable is compatible with the deepboard version to avoid corrupting 
 data.
+- Commande line arguments (CLI) and the configuration file path are now optional when creating a new run.
 - 
 ### Fixed bugs
 - Now can change the port and listening address of the GUI server
