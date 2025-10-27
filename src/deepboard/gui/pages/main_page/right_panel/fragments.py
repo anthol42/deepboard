@@ -51,7 +51,6 @@ def FragmentCard(runID: int, step: int, epoch: Optional[int], run_rep: int, frag
         fragments = []
     else:
         fragment_splits = data[(step, epoch, run_rep)]
-        print(fragment_splits)
         avail_splits = list(fragment_splits.keys())
         avail_splits.sort()
         if selected is None:

@@ -4,7 +4,7 @@ Bugs:
 - [X] Fix that we can't set hyperparameters to NULL (NOT NULL constraint)
 - [X] When value is 0.00005, it is rounded to 0.0001 in GUI. Fix this
 - [X] Close cursor as soon as possible to avoid 'database is locked' errors
-- [ ] It prints the fragment when returned in the GUI
+- [X] It prints the fragment when returned in the GUI
 
 Next version
 - [ ] Add a major version number in the database to avoid running a database with a wrong version

@@ -7,7 +7,6 @@ def ChartType(session, path: str, selected_rows_key: str, session_path: str):
     else:
         print("Warning: no selected lines")
         runIDs = ""
-        print(session)
 
     if "chart_type" not in session[session_path]:
         session[session_path]["chart_type"] = "step"

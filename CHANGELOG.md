@@ -1,9 +1,11 @@
 ## 0.3.0
 ### New features
+
+### Fixed bugs
 - Now can change the port and listening address of the GUI server
 - Now can log hyperparameters with NULL values
 - Now, hyperparameters do not lose precision when displayed in the resultTable in the GUI
-### Fixed bugs
+- Removed debug prints when loading fragments
 
 ## 0.2.3
 - Fix a bug when a run had failed, we couldn't re-run it.

@@ -36,7 +36,6 @@ def right_click_handler_row(session, elementIds: List[str], top: int, left: int)
     else:
         hideshow_button = Li('Hide', hx_get=f"/hide_run?run_id={clicked_row}", hx_target='#experiment-table',
                              hx_swap="innerHTML",cls="menu-item")
-    print(session)
     if session.get("show_hidden", False):
         toggle_visibility_button = Li('Hide Hidden', hx_get=f"/hide_hidden", hx_target='#experiment-table',
                                       hx_swap="innerHTML", cls="menu-item")
