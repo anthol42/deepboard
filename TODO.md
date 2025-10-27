@@ -13,7 +13,7 @@ Next version
 - [X] Hidden runs are considered 'yanked', and not considered when checking for duplicated runs.
 - [X] Possibility to edit Notes (New field, similar to comments, but editable)
 - [X] See comments and notes in Info table. There we can edit notes
-- [ ] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
+- [X] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
 - [X] monospace font and wrap in CLI section
 - [ ] Add a default theme for tables customizable in the theme file (Like jupyter notebooks)
 - [ ] Quick filter in table to quickly filter runs

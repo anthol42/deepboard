@@ -2,6 +2,20 @@ from typing import *
 from fasthtml.common import *
 from deepboard.gui.components import Legend, ChartType, Smoother, LogSelector
 
+def getName(row: dict) -> Optional[str]:
+    """
+    From an experiment dict, get its display name. If a 'note' is given, use it. Otherwise, use the comment. If no
+    comment is given, return None
+    :param row: The experiment row as dict
+    :return: note or comment or None
+    """
+    s = row.get('note') or row.get('comment') or None
+    if s is None:
+        return None
+
+    s = [line.strip() for line in s.splitlines() if line.strip()][0] # First non-empty line
+    return s
+
 def CompareSetup(session, swap: bool = False):
     from __main__ import CONFIG
     from __main__ import rTable
@@ -13,11 +27,12 @@ def CompareSetup(session, swap: bool = False):
     raw_labels = sorted(raw_labels)
     sockets = [rTable.load_run(runID) for runID in raw_labels]
     repetitions = [socket.get_repetitions() for socket in sockets]
+    names = [getName(rTable.fetch_experiment(runID)) for runID in raw_labels]
     if any(len(rep) > 1 for rep in repetitions):
-        labels = [(f"{label}.{rep}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}.{rep}" in hidden_lines) for i, label in enumerate(raw_labels) for rep in sockets[i].get_repetitions()]
+        labels = [(f"{label}.{rep} — {name}" if name is not None else f"{label}.{rep}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}.{rep}" in hidden_lines) for i, (label, name) in enumerate(zip(raw_labels, names)) for rep in sockets[i].get_repetitions()]
     else:
-        labels = [(f"{label}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}" in hidden_lines) for
-                  i, label in enumerate(raw_labels)]
+        labels = [(f"{label} — {name}" if name is not None else f"{label}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}" in hidden_lines) for
+                  i, (label, name) in enumerate(zip(raw_labels, names))]
     return Div(
         H1("Setup", cls="chart-scalar-title"),
         Legend(session, labels, path="/compare", selected_rows_key="compare"),
