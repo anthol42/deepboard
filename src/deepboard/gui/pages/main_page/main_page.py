@@ -10,7 +10,7 @@ def MainPage(session, swap: bool = False, fullscreen: bool = False):
             CompareButton(session),
             Div(hx_target="#container",
                 hx_swap="outerHTML",
-                hx_trigger="keyup[key=='f' || key=='F'] from:body",
+                hx_trigger="keyup[!event.target.matches('input, textarea') && (key=='f' || key=='F')] from:body",
                 hx_get=f"/fullscreen?full={'true' if not fullscreen else 'false'}",),
             cls="table-container"
         ),

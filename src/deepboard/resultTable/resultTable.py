@@ -120,6 +120,7 @@ class ResultTable:
                           AND config_hash = ?
                           AND cli = ?
                           AND comment = ?
+                          AND hidden = 0;
                 """, (experiment_name, config_str, config_hash, cli, comment))
                 result = cursor.fetchall()
                 if result is not None:
@@ -226,6 +227,7 @@ class ResultTable:
         logwriter.enabled = False  # We cannot log with a used writer
         return logwriter
 
+
     def hide_run(self, run_id: int):
         """
         Instead of deleting runs and lose information, you can hide it. It will not be visible in the default view of
@@ -266,7 +268,7 @@ class ResultTable:
         with self.dict_cursor as cursor:
             cursor.execute("SELECT * FROM Experiments WHERE run_id=?", (run_id,))
             row = cursor.fetchone()
-            return row
+            return dict(row)
 
     def set_column_order(self, columns: Dict[str, Optional[int]]):
         """

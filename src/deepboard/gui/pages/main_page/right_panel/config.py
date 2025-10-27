@@ -27,11 +27,11 @@ def ConfigView(runID: int):
 
     # Cli
     row = rTable.fetch_experiment(runID)
-    command_line = row[5]
-    if row[4] == "":
+    command_line = row["command"]
+    if row['cli'] == "":
         lines = []
     else:
-        cli = {keyvalue.split("=")[0]: "=".join(keyvalue.split("=")[1:]) for keyvalue in row[4].split(" ")}
+        cli = {keyvalue.split("=")[0]: "=".join(keyvalue.split("=")[1:]) for keyvalue in row['cli'].split(" ")}
         # lines = [P(Markup(f"- {key}: {value}"), cls="config-part") for key, value in cli.items()]
         lines = "\n".join(f"- {key}: {value}" for key, value in cli.items())
     return Div(

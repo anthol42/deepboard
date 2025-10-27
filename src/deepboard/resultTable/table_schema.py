@@ -31,6 +31,7 @@ def create_database(db_path):
         cli varchar(512),
         command varchar(256),
         comment TEXT,
+        note TEXT DEFAULT '',
         start DATETIME NOT NULL,
         status TEXT CHECK (status IN ('running', 'finished', 'failed')) DEFAULT 'running',
         commit_hash varchar(40),

@@ -378,6 +378,18 @@ class LogWriter:
         with self._cursor as cursor:
             cursor.execute("UPDATE Experiments SET status=? WHERE run_id=?", (status, self.run_id))
 
+    def update_note(self, note: str):
+        """
+        Update the note of the run
+        :param note: The note to set (will overwrite the previous one)
+        :return: None
+        """
+        self._run_pre_hooks()
+        if self.disable:
+            return
+        with self._cursor as cursor:
+            cursor.execute("UPDATE Experiments SET note=? WHERE run_id=?", (note, self.run_id))
+
     @property
     def status(self) -> str:
         """

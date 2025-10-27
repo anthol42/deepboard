@@ -5,7 +5,8 @@ data.
 - Commande line arguments (CLI) and the configuration file path are now optional when creating a new run.
 - Config files are now stores within the database instead of as files next to it.
 - Monospace font wrap uniformized in the Config section of the GUI.
-
+- Hidden runs are now considered 'yanked' and are not taken into account when checking for duplicated runs. When you run an experiment and find out later there was a bug, you can hide it and re-run without worrying about duplicated runs.
+- Now can add and modify notes for each run.
 ### Fixed bugs
 - Now can change the port and listening address of the GUI server
 - Now can log hyperparameters with NULL values

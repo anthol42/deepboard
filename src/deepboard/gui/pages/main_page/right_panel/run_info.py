@@ -2,6 +2,8 @@ from typing import *
 from datetime import datetime, timedelta
 from fasthtml.common import *
 from markupsafe import Markup
+from fasthtml.xtend import Textarea
+
 
 
 def CopyToClipboard(text: str, cls):
@@ -52,10 +54,10 @@ def InfoView(runID: int):
     # Cli
     row = rTable.fetch_experiment(runID)
     # RunID, Exp name, cfg, cfg hash, cli, command, comment, start, status, commit, diff
-    start: datetime = datetime.fromisoformat(row[7])
-    status = row[8]
-    commit = row[9]
-    diff = row[10]
+    start: datetime = datetime.fromisoformat(row['start'])
+    status = row["status"]
+    commit = row["commit_hash"]
+    diff = row["diff"]
     return (Table(
             Tr(
                 Td(H3("Start", cls="info-label")),
@@ -69,6 +71,20 @@ def InfoView(runID: int):
                 Td(H3("Commit", cls="info-label")),
                 Td(CopyToClipboard(commit, cls="info-value"), cls="align-right"),
             ),
+            Tr(
+                Td(Div(
+                    H3("Notes", cls="info-label", style="margin-bottom: 1em;"),
+                    Textarea(row["note"] if row["note"] else "",
+                             id="run-note-textarea",
+                             name="note",
+                             placeholder="Add notes for the run here...",
+                             hx_post=f"/runinfo/update_note?runID={runID}",
+                             hx_trigger="input changed delay:1s, focusout",
+                             hx_swap="none",
+                             cls="run-note-textarea",
+                             rows=7,
+                )), colspan=2)
+            ),
             cls="info-table",
         ),
         DiffView(diff))
@@ -78,6 +94,12 @@ def InfoView(runID: int):
 # Routes
 def build_info_routes(rt):
     rt("/runinfo/change_status")(change_status)
+    rt("/runinfo/update_note")(update_note)
+
+def update_note(session, runID: int, note: str):
+    from __main__ import rTable
+    socket = rTable.load_run(runID)
+    socket.update_note(note)
 
 def change_status(session, runID: int, run_status: str):
     from __main__ import rTable
