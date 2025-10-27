@@ -1,3 +1,4 @@
+import sqlite3
 import sys
 from typing import *
 from enum import Enum
@@ -7,7 +8,6 @@ from glob import glob
 from datetime import datetime
 import warnings
 import shutil
-import sqlite3
 import hashlib
 import pandas as pd
 import shlex
@@ -18,6 +18,7 @@ from .logwritter import LogWriter
 from .cursor import Cursor
 from .utils import get_last_commit, get_diff
 from .table_schema import create_database
+from .supported import is_table_supported
 
 class NoCommitAction(Enum):
     """
@@ -59,6 +60,7 @@ class ResultTable:
         """
         if not os.path.exists(db_path):
             self._create_database(db_path)
+
         db_path = PurePath(db_path) if not isinstance(db_path, PurePath) else db_path
 
         # The configuration files will be back up there
@@ -68,6 +70,17 @@ class ResultTable:
 
         self.db_path = db_path
         self.nocommit_action = nocommit_action
+
+        # Check if the database is supported
+        with self.cursor as cursor:
+            try:
+                version = cursor.execute('SELECT value FROM Meta WHERE key="deepboard_version"').fetchone()[0]
+            except sqlite3.OperationalError: # Database do not have version yet (too old)
+                version = None
+
+        is_supported, msg = is_table_supported(version)
+        if not is_supported:
+            raise RuntimeError(msg)
 
     def new_run(self, experiment_name: str,
                 config_path: Union[str, PurePath],

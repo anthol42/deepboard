@@ -7,21 +7,21 @@ Bugs:
 - [X] It prints the fragment when returned in the GUI
 
 Next version
-- [ ] Add a major version number in the database to avoid running a database with a wrong version
+- [X] Add a major version number in the database to avoid running a database with a wrong version
 - [ ] Make cli and config parameters optional when creating a new run
 - [ ] Make the config within the db, not as file next to it
 - [ ] Possibility to edit Notes (New field, similar to comments, but editable)
 - [ ] See comments and notes in Info table. There we can edit notes
+- [ ] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
 - [ ] monospace font and wrap in CLI section
 - [ ] Add a default theme for tables customizable in the theme file (Like jupyter notebooks)
-- [ ] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
 - [ ] Quick filter in table to quickly filter runs
 - [ ] Add possibility to add tags to runs
 - [ ] Add possibility to color run rows
 - [ ] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step and rep as the footer of the card (small text)
 - [ ] For figures / images / fragments, add a filter option by epochs, reps and tags (Can tag fragments when reporting them)
-- [ ] Add a full screen mode for single run view
 - [ ] Improve the image viewer with zooming and panning
+- [ ] Add a full screen mode for single run view
 
 
 

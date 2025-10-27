@@ -1,6 +1,8 @@
 ## 0.3.0
 ### New features
-
+- Now deepboard automatically checks if the resultTable is compatible with the deepboard version to avoid corrupting 
+data.
+- 
 ### Fixed bugs
 - Now can change the port and listening address of the GUI server
 - Now can log hyperparameters with NULL values

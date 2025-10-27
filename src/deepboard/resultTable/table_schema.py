@@ -1,8 +1,24 @@
 import sqlite3
+from ..__version__ import __version__
 
 def create_database(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
+    # Create a table to store the version of Deepboard that created the DB
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Meta
+    (
+        key varchar(128) PRIMARY KEY,
+        value varchar(128) NOT NULL
+    );
+    """)
+
+    # Insert the version of Deepboard
+    cursor.execute("""
+    INSERT OR IGNORE INTO Meta (key, value) VALUES
+    ('deepboard_version', ?);
+    """, (__version__,))
 
     # Create Experiments table
     cursor.execute("""
