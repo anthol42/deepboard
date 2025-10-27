@@ -3,13 +3,16 @@ from datetime import datetime, timedelta
 from fasthtml.common import *
 from markupsafe import Markup
 
-def CopyToClipboard(text: str, cls):
+def CopyToClipboard(text: str, cls, top_right: bool = False):
     return Div(
-        Span(text, cls='copy-text' + ' ' + cls),
+        Pre(Markup(text), cls='copy-text' + ' ' + cls),
         Span(
-            I(cls=f'fas fa-copy copy-icon default-icon {cls}'),
-            I(cls=f'fas fa-check copy-icon check-icon {cls}'),
-            cls='copy-icon-container',
+            Span(
+                I(cls=f'fas fa-copy copy-icon default-icon {cls}'),
+                I(cls=f'fas fa-check copy-icon check-icon {cls}'),
+                cls='copy-icon-container',
+            ),
+            style="position: absolute; top: 0em; right: 0em;" if top_right else ""
         ),
         onclick='copyToClipboard(this)',
         style="width: 100%;",
@@ -21,11 +24,6 @@ def ConfigView(runID: int):
 
     # Config
     cfg_text = rTable.load_config(runID)
-    if cfg_text is not None:
-        cfg_parts = cfg_text.splitlines()
-        cfg = []
-        for part in cfg_parts:
-            cfg.append(P(Markup(part), cls="config-part"))
 
     # Cli
     row = rTable.fetch_experiment(runID)
@@ -34,24 +32,26 @@ def ConfigView(runID: int):
         lines = []
     else:
         cli = {keyvalue.split("=")[0]: "=".join(keyvalue.split("=")[1:]) for keyvalue in row[4].split(" ")}
-        lines = [P(Markup(f"- {key}: {value}"), cls="config-part") for key, value in cli.items()]
+        # lines = [P(Markup(f"- {key}: {value}"), cls="config-part") for key, value in cli.items()]
+        lines = "\n".join(f"- {key}: {value}" for key, value in cli.items())
     return Div(
         Div(
             H2("Configuration"),
             Div(
-                *cfg,
+                # *cfg,
+                CopyToClipboard(cfg_text, cls="raw-file-view", top_right=True), # , cls="raw-file-view"),
                 cls="file-view",
             )
         ) if cfg_text is not None else None,
         Div(
             H2("Cli"),
             Div(
-                *lines,
+                Pre(Markup(lines), cls='raw-file-view'),
                 cls="file-view",
             ) if len(lines) > 0 else None,
 
             Div(
-                CopyToClipboard(command_line, cls=""),
+                CopyToClipboard(command_line, cls="raw-file-view"),
                 cls="file-view",
                 style="margin-top: 2em;"
             )

@@ -3,7 +3,9 @@
 - Now deepboard automatically checks if the resultTable is compatible with the deepboard version to avoid corrupting 
 data.
 - Commande line arguments (CLI) and the configuration file path are now optional when creating a new run.
-- 
+- Config files are now stores within the database instead of as files next to it.
+- Monospace font wrap uniformized in the Config section of the GUI.
+
 ### Fixed bugs
 - Now can change the port and listening address of the GUI server
 - Now can log hyperparameters with NULL values

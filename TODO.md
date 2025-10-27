@@ -13,7 +13,7 @@ Next version
 - [ ] Possibility to edit Notes (New field, similar to comments, but editable)
 - [ ] See comments and notes in Info table. There we can edit notes
 - [ ] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
-- [ ] monospace font and wrap in CLI section
+- [X] monospace font and wrap in CLI section
 - [ ] Add a default theme for tables customizable in the theme file (Like jupyter notebooks)
 - [ ] Quick filter in table to quickly filter runs
 - [ ] Add possibility to add tags to runs

@@ -30,7 +30,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-DEBUG = False
+DEBUG = True
 # Create config files to customize the UI
 initiate_files()
 
