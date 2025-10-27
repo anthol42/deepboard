@@ -136,7 +136,7 @@ class LogWriter:
         else:
             split, name = "", splitted_tag[0]
 
-        with self._cursor as cursor:
+        with self. _cursor as cursor:
             cursor.execute("SELECT * FROM Logs WHERE run_id=? AND split=? AND label=?", (self.run_id, split, name))
             # cursor.execute("SELECT * FROM Logs", (self.run_id, split, name))
             rows = cursor.fetchall()

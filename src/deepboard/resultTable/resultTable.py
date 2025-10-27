@@ -281,8 +281,10 @@ class ResultTable:
         """
         with self.cursor as cursor:
             # Batch update
-            for column, order in columns.items():
-                cursor.execute("UPDATE ResultDisplay SET display_order=? WHERE Name=?", (order, column))
+            cursor.executemany(
+                "UPDATE ResultDisplay SET display_order=? WHERE Name=?",
+                [(order, column) for column, order in columns.items()]
+            )
 
     def set_column_alias(self, columns: Dict[str, str]):
         """
@@ -412,12 +414,12 @@ class ResultTable:
             if row is None:
                 return None
 
-            # get raw bytes
-            image_data = row[0]
+        # get raw bytes
+        image_data = row[0]
 
-            # Convert bytes to PIL Image
-            image = Image.open(BytesIO(image_data))
-            return image
+        # Convert bytes to PIL Image
+        image = Image.open(BytesIO(image_data))
+        return image
 
     def to_pd(self, get_hidden: bool = False) -> pd.DataFrame:
         """
