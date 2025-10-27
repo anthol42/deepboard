@@ -92,7 +92,7 @@ def create_database(db_path):
     CREATE TABLE IF NOT EXISTS ResultDisplay
     (
         Name varchar(128) NOT NULL, display_order INTEGER, 
-        alias varchar(128) NOT NULL,
+        alias varchar(128) NOT NULL, is_hparam INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY(Name)
     );
     """)  # We can put order to unique, because each NULL value will be unique
@@ -100,19 +100,19 @@ def create_database(db_path):
     # Add default columns
     cursor.execute("""
     INSERT
-    OR IGNORE INTO ResultDisplay (Name, display_order, alias) VALUES
-    ('run_id', 0, 'Run ID'),
-    ('experiment', 1, 'Experiment'),
-    ('config', 2, 'Config'),
-    ('config_hash', NULL, 'Config Hash'),
-    ('cli', NULL, 'Cli'),
-    ('command', NULL, 'Command'),
-    ('comment', 4, 'Comment'),
-    ('start', NULL, 'Start'),
-    ('status', NULL, 'Status'),
-    ('commit_hash', NULL, 'Commit'),
-    ('diff', NULL, 'Diff'),
-    ('hidden', NULL, 'Hidden');
+    OR IGNORE INTO ResultDisplay (Name, display_order, alias, is_hparam) VALUES
+    ('run_id', 0, 'Run ID', 0),
+    ('experiment', 1, 'Experiment', 0),
+    ('config', 2, 'Config', 0),
+    ('config_hash', NULL, 'Config Hash', 0),
+    ('cli', NULL, 'Cli', 0),
+    ('command', NULL, 'Command', 0),
+    ('comment', 4, 'Comment', 0),
+    ('start', NULL, 'Start', 0),
+    ('status', NULL, 'Status', 0),
+    ('commit_hash', NULL, 'Commit', 0),
+    ('diff', NULL, 'Diff', 0),
+    ('hidden', NULL, 'Hidden', 0);
     """)
 
     # Create a trigger to add a new metric to the display table
@@ -121,11 +121,11 @@ def create_database(db_path):
     AFTER INSERT ON Results
                    BEGIN
         -- Insert a row into ResultDisplay if the Name does not exist
-        INSERT
-                   OR IGNORE INTO ResultDisplay (Name, display_order, alias)
+        INSERT OR IGNORE INTO ResultDisplay (Name, display_order, alias, is_hparam)
                    SELECT NEW.metric,
                           COALESCE(MAX(display_order), 0) + 1,
-                          NEW.metric
+                          NEW.metric,
+                          NEW.is_hparam
                    FROM ResultDisplay;
                    END;
                    """)

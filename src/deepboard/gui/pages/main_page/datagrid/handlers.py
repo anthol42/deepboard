@@ -5,7 +5,7 @@ def right_click_handler(elementIds: List[str], top: int, left: int):
     from __main__ import rTable
     elementId = [elem for elem in elementIds if elem.startswith("grid-header-")][0]
     clicked_col = elementId.replace("grid-header-", "")
-    hidden_columns = [(key, alias) for key, (order, alias) in rTable.result_columns.items() if order is None]
+    hidden_columns = [(key, alias) for key, (order, alias, _) in rTable.result_columns.items() if order is None]
     return Div(
         Ul(
             Li('Hide', hx_get=f"/hide?col={clicked_col}", hx_target='#experiment-table', hx_swap="innerHTML", cls="menu-item"),

@@ -318,7 +318,7 @@ class ResultTable:
         If order is -1, it will be set to the last column.
         """
         # If the column is already at this order, do nothing
-        current = {col_id: order for col_id, (order, alias) in self.result_columns.items()}[column]
+        current = {col_id: order for col_id, (order, alias, _) in self.result_columns.items()}[column]
         if current == order:
             return
         with self.cursor as cursor:
@@ -343,7 +343,7 @@ class ResultTable:
             # Insert the column
             cursor.execute("UPDATE ResultDisplay SET display_order=? WHERE Name=?", (order, column))
 
-    def get_results(self, run_id: Optional[int] = None, show_hidden: bool = False) -> Tuple[List[str], List[str], List[List[Any]]]:
+    def get_results(self, run_id: Optional[int] = None, show_hidden: bool = False) -> Tuple[List[str], List[str], List[bool], List[List[Any]]]:
         """
         This function will build the result table and return it as a list. It will also return the column names and
         their unique id. It will not return the columns that were hidden and will format the table to respect the
@@ -351,7 +351,7 @@ class ResultTable:
         You can also get a single row by passing a run_id to the method.
         :param run_id: the run id. If none is specified, it fetches all results
         :param show_hidden: Show hidden runs.
-        :return: A list of columns names, a list of column ids and a list of rows
+        :return: A list of columns names, a list of column ids, a list of whether they are hparam or not, and a list of rows
         """
         out = {}
         exp_info = {}
@@ -393,12 +393,12 @@ class ResultTable:
             exp_info[run_id].update(metrics)
 
         # Sort the columns of the result table
-        columns = [(col_id, col_order, col_alias) for col_id, (col_order, col_alias) in self.result_columns.items() if
+        columns = [(col_id, col_order, col_alias, is_hparam) for col_id, (col_order, col_alias, is_hparam) in self.result_columns.items() if
                    col_order is not None]
         columns.sort(key=lambda x: x[1])
 
         table = [[row.get(col[0]) for col in columns] for key, row in exp_info.items()]
-        return [col[2] for col in columns], [col[0] for col in columns], table
+        return [col[2] for col in columns], [col[0] for col in columns], [col[3] for col in columns], table
 
     def get_image_by_id(self, image_id: int) -> Optional[Image.Image]:
         """
@@ -446,17 +446,18 @@ class ResultTable:
             return [row[0] for row in rows]
 
     @property
-    def result_columns(self) -> Dict[str, Tuple[Optional[int], str]]:
+    def result_columns(self) -> Dict[str, Tuple[Optional[int], str, bool]]:
         """
         Get all the columns in the result table that can be shown. It will return a dictionary where the keys are the
-        columns ids and the values a tuple containing the column position (order) and its name (alias).
-        {col_id: (order, alias), ...}
+        columns ids and the values a tuple containing the column position (order), its name (alias) and whether it is a
+        hyperparameter column (hparam) or not.
+        {col_id: (order, alias, is_hparam), ...}
         :return: The available columns.
         """
         with self.cursor as cursor:
-            cursor.execute("SELECT Name, display_order, alias FROM ResultDisplay")
+            cursor.execute("SELECT Name, display_order, alias, is_hparam FROM ResultDisplay")
             rows = cursor.fetchall()
-            return {row[0]: (row[1], row[2]) for row in rows}
+            return {row[0]: (row[1], row[2], bool(row[3])) for row in rows}
 
     @property
     def cursor(self):

@@ -2,6 +2,7 @@
 ### New features
 - Now can change the port and listening address of the GUI server
 - Now can log hyperparameters with NULL values
+- Now, hyperparameters do not lose precision when displayed in the resultTable in the GUI
 ### Fixed bugs
 
 ## 0.2.3

@@ -2,7 +2,7 @@
 Bugs:
 - [X] Possibility to change the port in gui and listening adress
 - [X] Fix that we can't set hyperparameters to NULL (NOT NULL constraint)
-- [ ] When value is 0.00005, it is rounded to 0.0001 in GUI. Fix this
+- [X] When value is 0.00005, it is rounded to 0.0001 in GUI. Fix this
 - [ ] Close cursor as soon as possible to avoid 'database is locked' errors
 - [ ] It prints the fragment when returned in the GUI
 

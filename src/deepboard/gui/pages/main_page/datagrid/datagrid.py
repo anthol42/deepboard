@@ -15,7 +15,7 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, ful
     rows_selected = session["datagrid"].get("selected-rows") or []
     sort_by: Optional[str] = session["datagrid"].get("sort_by", None)
     sort_order: Optional[str] = session["datagrid"].get("sort_order", None)
-    columns, col_ids, data = rTable.get_results(show_hidden=show_hidden)
+    columns, col_ids, is_hparam, data = rTable.get_results(show_hidden=show_hidden)
     # If the columns to sort by is hidden, we reset it
     if sort_by is not None and sort_by not in col_ids:
         session["datagrid"]["sort_by"] = sort_by = None
@@ -48,6 +48,7 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, ful
                     ),
                 Tbody(
                     *[Row(row,
+                          is_hparam,
                           run_id,
                           max_decimals=CONFIG.MAX_DEC,
                           selected=run_id in rows_selected,

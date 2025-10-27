@@ -138,8 +138,33 @@ def make_fig(lines, type: str = "step", smoothness: float = 0., log_scale: bool 
         raise ValueError(f"Unknown plotting type: {type}")
     return fig
 
+def sci_round(val: float, significative=4) -> str:
+    """
+    Round the number to have 'significative' significative numbers, then, if rounding it in decimal fashion removes
+    more than 'significative' decimal places, convert it to scientific notation.
+    :param val: The value to round
+    :param significative: The number of significative digits to keep.
+    :return: The string representation of the rounded value.
+    """
+    # Get the number of significative digits before the decimal point
+    d = Decimal(str(val)).normalize()
+    s = format(d, 'f').replace('.', '').lstrip('0').rstrip('0')
+    inf_digits = len(s) # Informative digits
+    if inf_digits > significative:
+        magnitude = -math.floor(math.log10(abs(val)))
+        quantizer = Decimal('1').scaleb(-significative)
+        rounded = float(Decimal(val * 10**magnitude).quantize(quantizer, rounding=ROUND_HALF_UP)) / (10**magnitude)
+    else:
+        rounded = val
 
-def smart_round(val, decimals=4):
+    # Now, check if more than 4 numbers are displayed
+    if len(str(rounded).replace(".", "")) > significative + 1:
+        return f"{rounded:.{significative - 1}e}"
+    else:
+        return str(rounded)
+
+
+def smart_round(val, decimals=4) -> str:
     """
     Round a float to the given number of decimal places. However, if the float already has less decimal, noting is done!
     In addition, if the value is about to get rounded to zero, it is converted to scientific notation.

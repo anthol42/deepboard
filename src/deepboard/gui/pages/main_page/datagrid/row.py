@@ -1,7 +1,7 @@
 from typing import *
 from fasthtml.common import *
 from .utils import format_value
-def Row(data, run_id, selected: bool, hidden: bool, max_decimals: int, fullscreen: bool):
+def Row(data, hparam_mask, run_id, selected: bool, hidden: bool, max_decimals: int, fullscreen: bool):
     cls = "table-row"
     if selected:
         cls += " table-row-selected"
@@ -10,7 +10,7 @@ def Row(data, run_id, selected: bool, hidden: bool, max_decimals: int, fullscree
         cls += " table-row-hidden"
 
     return Tr(
-        *[Td(format_value(value, decimals=max_decimals)) for value in data],
+        *[Td(format_value(value, max_decimals, is_hparam)) for (value, is_hparam) in zip(data, hparam_mask)],
         hx_get=f"/click_row?run_id={run_id}&fullscreen={fullscreen}",  # HTMX will GET this URL
         hx_trigger="click[!event.ctrlKey && !event.metaKey]",
         hx_target="#experiment-table",  # Target DOM element to update
