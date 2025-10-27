@@ -21,16 +21,17 @@ def ConfigView(runID: int):
 
     # Config
     cfg_text = rTable.load_config(runID)
-    cfg_parts = cfg_text.splitlines()
-    cfg = []
-    for part in cfg_parts:
-        cfg.append(P(Markup(part), cls="config-part"))
+    if cfg_text is not None:
+        cfg_parts = cfg_text.splitlines()
+        cfg = []
+        for part in cfg_parts:
+            cfg.append(P(Markup(part), cls="config-part"))
 
     # Cli
     row = rTable.fetch_experiment(runID)
     command_line = row[5]
     if row[4] == "":
-        lines = [P(Markup(""), cls="config-part")]
+        lines = []
     else:
         cli = {keyvalue.split("=")[0]: "=".join(keyvalue.split("=")[1:]) for keyvalue in row[4].split(" ")}
         lines = [P(Markup(f"- {key}: {value}"), cls="config-part") for key, value in cli.items()]
@@ -41,13 +42,13 @@ def ConfigView(runID: int):
                 *cfg,
                 cls="file-view",
             )
-        ),
+        ) if cfg_text is not None else None,
         Div(
             H2("Cli"),
             Div(
                 *lines,
                 cls="file-view",
-            ),
+            ) if len(lines) > 0 else None,
 
             Div(
                 CopyToClipboard(command_line, cls=""),

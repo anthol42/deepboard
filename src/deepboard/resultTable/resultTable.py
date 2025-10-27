@@ -4,10 +4,8 @@ from typing import *
 from enum import Enum
 from pathlib import PurePath
 import os
-from glob import glob
 from datetime import datetime
 import warnings
-import shutil
 import hashlib
 import pandas as pd
 import shlex
@@ -62,11 +60,6 @@ class ResultTable:
             self._create_database(db_path)
 
         db_path = PurePath(db_path) if not isinstance(db_path, PurePath) else db_path
-
-        # The configuration files will be back up there
-        self.configs_path = db_path.parent / "configs"
-        if not os.path.exists(self.configs_path):
-            os.mkdir(self.configs_path)
 
         self.db_path = db_path
         self.nocommit_action = nocommit_action
@@ -160,17 +153,12 @@ class ResultTable:
                 else:
                     run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
 
-            if not isinstance(config_path, PurePath):
-                config_path = PurePath(config_path)
-            config_name = config_path.name
+            self._store_config(run_id, config_path)
         else:
             run_id = -2 # If disabled and not debug, we use -2 to indicate that it is a disabled run
             if not isinstance(config_path, PurePath):
                 config_path = PurePath(config_path)
             config_name = config_path.name
-
-        extension = config_name.split(".")[-1]
-        shutil.copy(config_path, self.configs_path / f'{run_id}.{extension}')
 
         return LogWriter(self.db_path, run_id, datetime.now(), flush_each=flush_each, keep_each=keep_each,
                          disable=disable, auto_log_plt=auto_log_plt)
@@ -210,34 +198,23 @@ class ResultTable:
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
             self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, command, comment, start, None, None)
-
-        # TODO: Change this ⬇⬇
-        if config_path is not None:
-            if not isinstance(config_path, PurePath):
-                config_path = PurePath(config_path)
-            config_name = config_path.name
-
-            extension = config_name.split(".")[-1]
-            shutil.copy(config_path, self.configs_path / f'{-1}.{extension}')
+            self._store_config(-1, config_path)
 
         return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable,
                          auto_log_plt=auto_log_plt)
 
-    # TODO: Change this ⬇⬇
     def load_config(self, run_id: int) -> str:
         """
         Load the configuration file of a given run id
         :param run_id: The run id
         :return: The path to the configuration file
         """
-        valid_files = glob(str(self.configs_path / f"{run_id}.*"))
-        if len(valid_files) > 1:
-            print(f"Warning: More than one configuration file found for run {run_id}. ")
-        if len(valid_files) == 0:
-            return ""
-        with open(valid_files[0], 'r') as f:
-            content = f.read()
-        return content
+        with self.cursor as cursor:
+            cursor.execute("SELECT file_content FROM ConfigFile WHERE run_id=?", (run_id,))
+            row = cursor.fetchone()
+            if row is None:
+                raise RuntimeError(f"No configuration file found for run id {run_id}")
+            return row[0]
 
     def load_run(self, run_id) -> LogWriter:
         """
@@ -446,7 +423,7 @@ class ResultTable:
         :return: The table as a pandas dataframe.
         """
 
-        columns, col_ids, data = self.get_results(show_hidden=get_hidden)
+        columns, col_ids, _, data = self.get_results(show_hidden=get_hidden)
         df = pd.DataFrame(data, columns=columns)
         if "run_id" in col_ids:
             idx = col_ids.index("run_id")
@@ -495,6 +472,25 @@ class ResultTable:
         return Cursor(self.db_path, format_as_dict=True)
 
 
+    def _store_config(self, run_id: int, config_path: Optional[Union[str, PurePath]]):
+        """
+        Store the configuration file in the database.
+        :param run_id: The run id
+        :param config_path: The path to the configuration file
+        :return: None
+        """
+        if config_path is not None:
+            with open(config_path, 'r') as f:
+                config_content = f.read()
+        else:
+            config_content = None
+        with self.cursor as cursor:
+            cursor.execute("""
+                            INSERT INTO ConfigFile (run_id, file_content) 
+                            VALUES (?, ?);
+                            """,
+                           (run_id, config_content))
+
     def _create_run_with_id(self, run_id: int, experiment_name: str, config_str: str, config_hash: str, cli: str, command: str,
                             comment: str, start: datetime, commit: Optional[str], diff: Optional[str]):
         self._delete_run(run_id)
@@ -527,6 +523,8 @@ class ResultTable:
         with self.cursor as cursor:
             # Delete the failed run and replace it with the new one
             cursor.execute("DELETE FROM Experiments WHERE run_id=?", (run_id,))
+            # Delete the config
+            cursor.execute("DELETE FROM ConfigFile WHERE run_id=?", (run_id,))
             # Delete logs
             cursor.execute("DELETE FROM Logs WHERE run_id=?", (run_id,))
             cursor.execute("DELETE FROM Images WHERE run_id=?", (run_id,))

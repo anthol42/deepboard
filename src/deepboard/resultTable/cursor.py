@@ -1,7 +1,8 @@
 import sqlite3
-
+from typing import Union
+from pathlib import PurePath
 class Cursor:
-    def __init__(self, db_path: str, format_as_dict: bool = False):
+    def __init__(self, db_path: Union[str, PurePath], format_as_dict: bool = False):
         self.db_path = db_path
         self.format_as_dict = format_as_dict
 

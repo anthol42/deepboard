@@ -71,6 +71,16 @@ def create_database(db_path):
     );
     """)
 
+    # Create a ConfigFile table to store config file
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ConfigFile
+    (
+        run_id INTEGER NOT NULL PRIMARY KEY,
+        file_content TEXT,
+        FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
+    );
+    """)
+
     # Create an Image table to store images
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Images

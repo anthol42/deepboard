@@ -9,7 +9,7 @@ Bugs:
 Next version
 - [X] Add a major version number in the database to avoid running a database with a wrong version
 - [X] Make cli and config parameters optional when creating a new run
-- [ ] Make the config within the db, not as file next to it
+- [X] Make the config within the db, not as file next to it
 - [ ] Possibility to edit Notes (New field, similar to comments, but editable)
 - [ ] See comments and notes in Info table. There we can edit notes
 - [ ] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
