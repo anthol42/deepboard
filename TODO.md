@@ -15,7 +15,7 @@ Next version
 - [X] See comments and notes in Info table. There we can edit notes
 - [X] In compare tab, add a - Notes in the legend after the run ID for easier interpretation
 - [X] monospace font and wrap in CLI section
-- [ ] Add a default theme for tables customizable in the theme file (Like jupyter notebooks)
+- [X] Add a default theme for tables customizable in the theme file (Like jupyter notebooks)
 - [ ] Quick filter in table to quickly filter runs
 - [ ] Add possibility to add tags to runs
 - [ ] Add possibility to color run rows

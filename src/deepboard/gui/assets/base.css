@@ -205,3 +205,46 @@ img {
   /* Center content vertically */
   align-items: center;
 }
+
+
+
+
+/*Tables*/
+/* Jupyter-style table */
+table {
+  border-collapse: collapse;
+  color: var(--text_color);
+  background-color: var(--background-color);
+  border-radius: var(--dg-border-radius);
+  overflow: hidden;
+  box-shadow: var(--sp-table-shadow);
+}
+
+/* Table header */
+thead {
+  background-color: var(--dg-header-bg);
+}
+
+th {
+  padding: 0.6em 1em;
+}
+
+/* Table body */
+tr:nth-child(even) {
+  background-color: var(--dg-even-row-bg);
+}
+
+tr:hover {
+  background-color: var(--dg-row-hover);
+}
+
+td {
+  padding: 0.6em 1em;
+  color: var(--text_color);
+}
+
+/* Numeric values - right align */
+td.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

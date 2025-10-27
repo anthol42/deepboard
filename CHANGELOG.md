@@ -7,6 +7,8 @@ data.
 - Monospace font wrap uniformized in the Config section of the GUI.
 - Hidden runs are now considered 'yanked' and are not taken into account when checking for duplicated runs. When you run an experiment and find out later there was a bug, you can hide it and re-run without worrying about duplicated runs.
 - Now can add and modify notes for each run.
+- Default theme for fragment tables
+
 ### Fixed bugs
 - Now can change the port and listening address of the GUI server
 - Now can log hyperparameters with NULL values

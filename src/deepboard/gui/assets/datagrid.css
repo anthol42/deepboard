@@ -28,6 +28,7 @@
   color: var(--dg-header-color);
   border-bottom: 1px solid var(--dg-border-color);
   white-space: nowrap;
+  padding: 0;
 }
 .data-grid thead th div {
   background-color: inherit;
