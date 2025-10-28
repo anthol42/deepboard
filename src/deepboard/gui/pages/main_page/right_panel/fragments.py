@@ -1,7 +1,7 @@
 from fasthtml.common import *
 from starlette.responses import Response
 from typing import *
-from deepboard.gui.components import Modal, SplitSelector, StatLine, ArtefactGroup
+from deepboard.gui.components import SplitSelector, StatLine, ArtefactGroup
 
 def _get_fragment_groups(socket, type: Literal["RAW", "HTML"]):
     if type == "RAW":

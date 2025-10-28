@@ -3,6 +3,19 @@ from fasthtml.common import *
 from .row import Row
 from .header import Header, HeaderRename
 
+def apply_filters(data: List[List[Any]], col_ids: list[str], filters: dict) -> List[List[Any]]:
+    for col_id, excluded_values in filters.items():
+        if not excluded_values: # Empty filter
+            continue
+        if col_id not in col_ids: # Error, should not happen
+            print("Here, problem!!!!")
+            continue
+
+        col_idx = col_ids.index(col_id)
+        data = [row for row in data if str(row[col_idx]) not in excluded_values]
+
+    return data
+
 def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, fullscreen: bool = False):
     """
     Note that fullscreen only work if the container is requested because it applies on the container
@@ -20,6 +33,10 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, ful
     if sort_by is not None and sort_by not in col_ids:
         session["datagrid"]["sort_by"] = sort_by = None
         session["datagrid"]["sort_order"] = sort_order = None
+
+    filters = session["datagrid"].get("filters", {})
+    # Apply filters
+    data = apply_filters(data, col_ids, filters)
 
     if sort_by is not None and sort_order is not None:
         data = sorted(
@@ -41,7 +58,9 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, ful
                             HeaderRename(col_name, col_id) if col_id == rename_col else Header(
                                 col_name,
                                 col_id,
-                                sort_order if col_id == sort_by else None)
+                                sort_order if col_id == sort_by else None,
+                                has_filter=col_id in filters and len(filters[col_id]) > 0
+                            )
                             for col_name, col_id in zip(columns, col_ids)],
                         id="column-header-row"
                     )

@@ -3,6 +3,8 @@ from fasthtml.common import *
 from .datagrid import DataGrid
 from .compare_button import CompareButton
 from ..main_page import MainPage
+from ....components.quick_filter import QuickFilter, ColValue, get_unique_from_col
+from ....components.modal import WindowedModal
 
 def build_datagrid_endpoints(rt):
     rt("/hide")(hide_column)
@@ -17,6 +19,13 @@ def build_datagrid_endpoints(rt):
     rt("/show_hidden")(show_hidden)
     rt("/hide_hidden")(hide_hidden)
     rt("/compare_action")(compare_action)
+    rt("/filter_col_datagrid")(load_datagrid)
+    rt("/filter_value")(filter_value)
+    rt("/filter_deselect_all")(deselect_all)
+    rt("/filter_select_all")(select_all)
+    rt("/reload_datagrid")(reload_datagrid)
+    rt("/filter_clear")(filter_clear)
+
 
 async def hide_column(session, col: str):
     from __main__ import rTable
@@ -110,3 +119,66 @@ def compare_action(session, run_ids: str):
         session["show_hidden"] = False
     session["datagrid"] = dict()
     return MainPage(session, swap=True), HttpHeader("HX-Blank-Redirect", f"/compare?run_ids={run_ids}")
+
+async def load_datagrid(session, colid: str):
+    return QuickFilter(session, colid)
+
+async def filter_value(session, colid: str, value: str):
+    if "datagrid" not in session:
+        session["datagrid"] = dict(
+            filters={}
+        )
+    if "filters" not in session["datagrid"]:
+        session["datagrid"]["filters"] = {}
+
+    filters = session["datagrid"].get("filters", {})
+    if colid not in filters:
+        filters[colid] = []
+
+    if value in filters[colid]:
+        filters[colid].remove(value)
+        selected = True
+    else:
+        filters[colid].append(value)
+        selected = False
+
+    session["datagrid"]["filters"] = filters
+    return ColValue(colid, value, selected=selected)
+
+async def select_all(session, colid: str):
+    if "datagrid" not in session:
+        session["datagrid"] = dict(
+            filters={}
+        )
+    if "filters" not in session["datagrid"]:
+        session["datagrid"]["filters"] = {}
+
+    session["datagrid"]["filters"][colid] = []
+    return QuickFilter(session, colid)
+
+
+async def deselect_all(session, colid: str):
+    _, values = get_unique_from_col(colid)
+    if "datagrid" not in session:
+        session["datagrid"] = dict(
+            filters={}
+        )
+    if "filters" not in session["datagrid"]:
+        session["datagrid"]["filters"] = {}
+
+    session["datagrid"]["filters"][colid] = [str(val) for val in values]
+    return QuickFilter(session, colid)
+
+async def reload_datagrid(session):
+    return DataGrid(session), WindowedModal(title="", active=False, swap_oob=True)
+
+async def filter_clear(session, colid: str):
+    if "datagrid" not in session:
+        return DataGrid(session)
+    if "filters" not in session["datagrid"]:
+        return DataGrid(session)
+    filters = session["datagrid"]["filters"]
+    if colid in filters:
+        del filters[colid]
+    session["datagrid"]["filters"] = filters
+    return DataGrid(session)

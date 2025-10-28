@@ -1,15 +1,21 @@
 from typing import *
 from fasthtml.common import *
 
-def right_click_handler(elementIds: List[str], top: int, left: int):
+def right_click_handler(session, elementIds: List[str], top: int, left: int):
     from __main__ import rTable
     elementId = [elem for elem in elementIds if elem.startswith("grid-header-")][0]
     clicked_col = elementId.replace("grid-header-", "")
     hidden_columns = [(key, alias) for key, (order, alias, _) in rTable.result_columns.items() if order is None]
+    filters = session.get("datagrid", {}).get("filters", {})
     return Div(
         Ul(
             Li('Hide', hx_get=f"/hide?col={clicked_col}", hx_target='#experiment-table', hx_swap="innerHTML", cls="menu-item"),
             Li('Rename', hx_get=f'/rename_col_datagrid?col={clicked_col}', hx_target='#experiment-table', hx_swap="innerHTML", cls="menu-item"),
+            Li(I(cls="fa fa-filter", style="margin-right: 5px"), 'Quick Filter', hx_get=f'/filter_col_datagrid?colid={clicked_col}', hx_target='#windowed-modal',
+               hx_swap="outerHTML", cls="menu-item"),
+            Li(I(cls="fa-solid fa-filter-circle-xmark", style="margin-right: 5px"), 'Clear Filter',
+               hx_get=f'/filter_clear?colid={clicked_col}', hx_target='#experiment-table',
+               hx_swap="innerHTML", cls="menu-item") if clicked_col in filters and len(filters[clicked_col]) > 0 else None,
             Li(
                 Div(A('Add', href="#", cls="has-submenu"), Span("►"),
                     style="display: flex; flex-direction: row; justify-content: space-between;"),

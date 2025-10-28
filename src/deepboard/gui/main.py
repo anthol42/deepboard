@@ -7,7 +7,7 @@ from deepboard.gui.pages.main_page import MainPage, build_main_page_endpoints
 from deepboard.gui.utils import prepare_db, Config, initiate_files, get_table_path_from_cli, verify_runids
 from deepboard.gui.pages.compare_page import build_compare_routes, ComparePage
 from deepboard.gui.pages import _not_found
-from deepboard.gui.components import Modal
+from deepboard.gui.components import Modal, WindowedModal
 from deepboard.resultTable import ResultTable
 from fh_plotly import plotly_headers
 import argparse
@@ -84,7 +84,8 @@ def get(session):
 
     return (Title("Table"),
             Div(id="custom-menu"),
-            Modal(P("Hellp world"), active=False),
+            WindowedModal("Hello world", title="Quick Filter", active=False),
+            Modal(P("Hello world"), active=False),
             MainPage(session),
             )
 
@@ -99,7 +100,7 @@ def get(session, run_ids: str):
 def get(session, elementIds: str, top: int, left: int):
     elementIds = elementIds.split(",")
     if any(elementId.startswith("grid-header") for elementId in elementIds):
-        return right_click_handler(elementIds, top, left)
+        return right_click_handler(session, elementIds, top, left)
     elif any(elementId.startswith("grid-row") for elementId in elementIds):
         return right_click_handler_row(session, elementIds, top, left)
     else:

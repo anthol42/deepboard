@@ -5,6 +5,8 @@
     --secondary-text-color: #ccc;
     --primary-color: #50A76F;
     --primary-color-hover: #6FBF91;
+    --secondary-color: rgb(74, 150, 236);
+    --secondary-color-hover: rgb(115, 168, 228);
     --button-shadow-color: rgba(255, 255, 255, 0.15);
 
     --success-color: #4caf50;

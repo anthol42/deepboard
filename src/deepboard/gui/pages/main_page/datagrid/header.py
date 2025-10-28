@@ -1,10 +1,10 @@
 from typing import *
 from fasthtml.common import *
 
-def Header(name: str, col_id: str, sort_dir: str = None):
+def Header(name: str, col_id: str, sort_dir: str = None, has_filter: bool = False):
     if sort_dir == "asc":
         return Th(
-            Div(name, Span("↑", cls='sort-icon'), hx_get=f'/sort?by={col_id}&order=desc', target_id='experiment-table',
+            Div(name, I(cls='fa fa-filter', style="margin-left: 0.5em;") if has_filter else None, Span("↑", cls='sort-icon'), hx_get=f'/sort?by={col_id}&order=desc', target_id='experiment-table',
                 hx_swap='innerHTML',
                 cls='sortable',
                 id=f"grid-header-{col_id}"
@@ -13,7 +13,7 @@ def Header(name: str, col_id: str, sort_dir: str = None):
         ),
     elif sort_dir == "desc":
         return Th(
-            Div(name, Span("↓", cls='sort-icon'), hx_get=f'/sort?by={col_id}&order=', target_id='experiment-table',
+            Div(name, I(cls='fa fa-filter', style="margin-left: 0.5em;") if has_filter else None, Span("↓", cls='sort-icon'), hx_get=f'/sort?by={col_id}&order=', target_id='experiment-table',
                 hx_swap='innerHTML',
                 cls='sortable',
                 id=f"grid-header-{col_id}"),
@@ -21,7 +21,7 @@ def Header(name: str, col_id: str, sort_dir: str = None):
         ),
     else:
         return Th(
-            Div(name, Span('⇅', cls='sort-icon'), hx_get=f'/sort?by={col_id}&order=asc', target_id='experiment-table',
+            Div(name, I(cls='fa fa-filter', style="margin-left: 0.5em;") if has_filter else None, Span('⇅', cls='sort-icon'), hx_get=f'/sort?by={col_id}&order=asc', target_id='experiment-table',
                 hx_swap='innerHTML',
                 cls='sortable',
                 id=f"grid-header-{col_id}"),
