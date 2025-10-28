@@ -153,9 +153,8 @@ border-collapse: collapse;
   border-collapse: collapse;
   background-color: var(--sp-table-bg);
   color: var(--sp-table-color);
-  border-radius: 8px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  border-radius: var(--sp-table-radius);
+  overflow: hidden;
   font-size: 0.95rem;
   box-shadow: var(--sp-table-shadow);
 }

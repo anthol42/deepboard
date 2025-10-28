@@ -36,14 +36,10 @@ def Status(runID: int, status: Literal["running", "finished", "failed"], swap: b
         )
 
 def DiffView(diff: Optional[str]):
-    diff_parts = diff.splitlines() if diff else [""]
-    dff = []
-    for part in diff_parts:
-        dff.append(P(Markup(part), cls="config-part"))
     return Div(
         H2("Diff"),
             Div(
-                *dff,
+                Pre(Markup(diff), cls='raw-file-view'),
                 cls="file-view",
             )
         )
