@@ -1,6 +1,6 @@
 from typing import *
 from fasthtml.common import *
-from fh_plotly import plotly2fasthtml
+from ....components import plotly2fasthtml_download
 from .utils import make_lines
 from deepboard.gui.utils import make_fig
 
@@ -29,7 +29,7 @@ def Chart(session, split: str, metric: str, type: Literal["step", "duration"], r
     else:
         update_params = {}
     return  Div(
-            plotly2fasthtml(fig, js_options=dict(responsive=True)),
+            plotly2fasthtml_download(fig, js_options=dict(responsive=True)),
             cls="chart-container",
             id=f"chart-container-{split}-{metric}",
             **update_params

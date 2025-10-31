@@ -22,9 +22,9 @@ Next version
 - [ ] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step and rep as the footer of the card (small text)
 - [ ] For figures / images / fragments, add a filter option by epochs, reps and tags (Can tag fragments when reporting them)
 - [ ] Improve the image viewer with zooming and panning
-- [ ] Add a full screen mode for single run view
-
-
+- [ ] Add a way to save models
+- [X] Add a way to download graph data as csv
 
 Next next version
 - [ ] Match tensorboard basic features
+- [ ] Add a full screen mode for single run view

@@ -1,9 +1,6 @@
-import plotly.graph_objects as go
-import pandas as pd
 from typing import *
-from datetime import datetime, timedelta
 from fasthtml.common import *
-from fh_plotly import plotly2fasthtml
+from ....components import plotly2fasthtml_download
 from deepboard.gui.components import Legend, Smoother, ChartType, LogSelector
 from deepboard.gui.utils import get_lines, make_fig
 
@@ -110,7 +107,7 @@ def Chart(session, runID: int, metric: str, type: str = "step", running: bool = 
     else:
         update_params = {}
     return Div(
-            plotly2fasthtml(fig, js_options=dict(responsive=True)),
+            plotly2fasthtml_download(fig, js_options=dict(responsive=True)),
             cls="chart-container",
             id=f"chart-container-{runID}-{metric}",
             **update_params

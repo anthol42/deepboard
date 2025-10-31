@@ -75,3 +75,60 @@ document.addEventListener('htmx:beforeOnLoad', function (event) {
         window.open(redirectUrl, '_blank');
     }
   });
+
+// Custom function that is called when clicking the "Download CSV" button in Plotly plots
+function clickDownloadCSV(gd){
+    console.log(gd);
+
+    // Helper function to decode base64 binary data
+    function decodeBinaryData(bdata, dtype) {
+        var binary = atob(bdata);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+
+        // Convert based on dtype
+        if (dtype === 'f8') {
+            // Float64 (8 bytes per value)
+            return new Float64Array(bytes.buffer);
+        } else if (dtype === 'i1') {
+            // Int8 (1 byte per value)
+            return new Int8Array(bytes.buffer);
+        } else if (dtype === 'i4') {
+            // Int32 (4 bytes per value)
+            return new Int32Array(bytes.buffer);
+        }
+        return bytes;
+    }
+
+    var csv = 'x,y,trace\n';
+
+    gd.data.forEach(function(trace) {
+        // Check if data is in binary format (bdata) or regular array
+        var xData = trace.x;
+        var yData = trace.y;
+
+        if (trace.x && trace.x.bdata && trace.x.dtype) {
+            xData = decodeBinaryData(trace.x.bdata, trace.x.dtype);
+        }
+        if (trace.y && trace.y.bdata && trace.y.dtype) {
+            yData = decodeBinaryData(trace.y.bdata, trace.y.dtype);
+        }
+
+        for(var j = 0; j < xData.length; j++) {
+            csv += xData[j] + ',' + yData[j] + ',' + trace.name + '\n';
+        }
+    });
+
+    var blob = new Blob([csv], {type: 'text/csv'});
+    var url = window.URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'plot_data.csv';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+
