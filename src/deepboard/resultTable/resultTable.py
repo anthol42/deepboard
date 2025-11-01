@@ -79,6 +79,7 @@ class ResultTable:
                 config_path: Optional[Union[str, PurePath]] = None,
                 cli: Optional[dict] = None,
                 comment: Optional[str] = None,
+                tag: str = "",
                 flush_each: int = 10,
                 keep_each: int = 1,
                 auto_log_plt: bool = True,
@@ -90,6 +91,7 @@ class ResultTable:
         :param config_path: The path to the configuration path
         :param cli: The cli arguments
         :param comment: The comment, if any
+        :param tag: The tag of the run
         :param flush_each: Every how many logs does the logger save them to the database?
         :param keep_each: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
         :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
@@ -145,14 +147,14 @@ class ResultTable:
                                            f"parameter to avoid duplicate runs or add a comment.")
                     elif run_id is not None and status == "failed":
                         # If here, the run does exist, but failed. So we will retry it
-                        self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
+                        self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff)
 
                     elif run_id is None:
                         # Only a debug run exists. So we need to create a new one
-                        run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
+                        run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff)
 
                 else:
-                    run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff)
+                    run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff)
 
             self._store_config(run_id, config_path)
         else:
@@ -168,6 +170,7 @@ class ResultTable:
                 config_path: Optional[Union[str, PurePath]] = None,
                 cli: Optional[dict] = None,
                 comment: Optional[str] = None,
+                tag: str = "",
                 flush_each: int = 10,
                 keep_each: int = 1,
                 auto_log_plt: bool = True,
@@ -184,6 +187,7 @@ class ResultTable:
         :param config_path: The path to the configuration path
         :param cli: The cli arguments
         :param comment: The comment, if any
+        :param tag: The tag of the run
         :param flush_each: Every how many logs does the logger save them to the database?
         :param keep_each: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
         :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
@@ -198,7 +202,7 @@ class ResultTable:
         cli = "" if cli is None else " ".join([f'{key}={value}' for key, value in cli.items()])
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
-            self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, command, comment, start, None, None)
+            self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, command, comment, tag, start, None, None)
             self._store_config(-1, config_path)
 
         return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable,
@@ -355,7 +359,7 @@ class ResultTable:
         out = {}
         exp_info = {}
         with self.cursor as cursor:
-            command = "SELECT E.run_id, E.experiment, E.config, E.config_hash, E.cli, E.command, E.comment, E.start, E.status, E.commit_hash, E.diff, E.hidden, R.metric, R.value " \
+            command = "SELECT E.run_id, E.experiment, E.config, E.config_hash, E.cli, E.command, E.comment, E.tag, E.start, E.status, E.commit_hash, E.diff, E.hidden, R.metric, R.value " \
                         "FROM Experiments E LEFT JOIN Results R ON E.run_id = R.run_id"
             params = []
             if run_id is not None:
@@ -379,11 +383,12 @@ class ResultTable:
                     cli=row[4],
                     command=row[5],
                     comment=row[6],
-                    start=datetime.fromisoformat(row[7]),
-                    status=row[8],
-                    commit_hash=row[9],
-                    diff=row[10],
-                    hidden=row[11]
+                    tag=row[7],
+                    start=datetime.fromisoformat(row[8]),
+                    status=row[9],
+                    commit_hash=row[10],
+                    diff=row[11],
+                    hidden=row[12]
                 )
             out[run_id][metric] = value
 
@@ -432,6 +437,17 @@ class ResultTable:
             colname = columns[idx]
             df.set_index(colname, inplace=True)
         return df
+
+    @property
+    def active_tags(self) -> List[str]:
+        """
+        Get all the active tags in the result table. It will return a list of tags.
+        :return: A list of tags.
+        """
+        with self.cursor as cursor:
+            cursor.execute("SELECT tag FROM ActiveTags")
+            rows = cursor.fetchall()
+            return [row[0] for row in rows]
 
     @property
     def runs(self) -> List[int]:
@@ -494,25 +510,25 @@ class ResultTable:
                            (run_id, config_content))
 
     def _create_run_with_id(self, run_id: int, experiment_name: str, config_str: str, config_hash: str, cli: str, command: str,
-                            comment: str, start: datetime, commit: Optional[str], diff: Optional[str]):
+                            comment: str, tag: str, start: datetime, commit: Optional[str], diff: Optional[str]):
         self._delete_run(run_id)
 
         with self.cursor as cursor:
             cursor.execute("""
-                                    INSERT INTO Experiments (run_id, experiment, config, config_hash, cli, command, comment, start, commit_hash, diff) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                    INSERT INTO Experiments (run_id, experiment, config, config_hash, cli, command, comment, tag, start, commit_hash, diff) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                                     """,
-                           (run_id, experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff))
+                           (run_id, experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff))
 
     def _create_run(self, experiment_name: str, config_str: str, config_hash: str, cli: str, command: str,
-                            comment: str, start: datetime, commit: str, diff: str):
+                            comment: str, tag: str, start: datetime, commit: str, diff: str):
 
         with self.cursor as cursor:
             cursor.execute("""
-                                    INSERT INTO Experiments (experiment, config, config_hash, cli, command, comment, start, commit_hash, diff) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                    INSERT INTO Experiments (experiment, config, config_hash, cli, command, comment, tag, start, commit_hash, diff) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                                     """,
-                           (experiment_name, config_str, config_hash, cli, command, comment, start, commit, diff))
+                           (experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff))
             return cursor.lastrowid
 
     def _delete_run(self, run_id: int):

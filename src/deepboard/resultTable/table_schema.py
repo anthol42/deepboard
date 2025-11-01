@@ -32,6 +32,7 @@ def create_database(db_path):
         command varchar(256),
         comment TEXT,
         note TEXT DEFAULT '',
+        tag TEXT DEFAULT '',
         start DATETIME NOT NULL,
         status TEXT CHECK (status IN ('running', 'finished', 'failed')) DEFAULT 'running',
         commit_hash varchar(40),
@@ -82,6 +83,14 @@ def create_database(db_path):
     );
     """)
 
+    # Create a Active Tag view to store active tags
+    cursor.execute("""
+    CREATE VIEW IF NOT EXISTS ActiveTags AS
+    SELECT DISTINCT tag
+    FROM Experiments
+    WHERE tag IS NOT NULL AND tag != '';
+    """)
+
     # Create an Image table to store images
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Images
@@ -130,7 +139,8 @@ def create_database(db_path):
     OR IGNORE INTO ResultDisplay (Name, display_order, alias, is_hparam) VALUES
     ('run_id', 0, 'Run ID', 0),
     ('experiment', 1, 'Experiment', 0),
-    ('config', 2, 'Config', 0),
+    ('tag', 2, 'Tag', 0),
+    ('config', 3, 'Config', 0),
     ('config_hash', NULL, 'Config Hash', 0),
     ('cli', NULL, 'Cli', 0),
     ('command', NULL, 'Command', 0),

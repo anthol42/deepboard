@@ -10,6 +10,8 @@ data.
 - Default theme for fragment tables
 - Quick filter: Now can filter categorical columns of the Result Table in the GUI
 - Now can download graph data as CSV files from the GUI
+- Now can add a tag to runs, for easier filtering and organization.
+
 
 ### Fixed bugs
 - Now can change the port and listening address of the GUI server

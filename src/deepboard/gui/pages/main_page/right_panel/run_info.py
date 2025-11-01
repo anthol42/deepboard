@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from fasthtml.common import *
 from markupsafe import Markup
 from fasthtml.xtend import Textarea
+from ....components import AutoCompleteInput
 
 
 
@@ -54,14 +55,19 @@ def InfoView(runID: int):
     status = row["status"]
     commit = row["commit_hash"]
     diff = row["diff"]
+    tag = row["tag"]
     return (Table(
             Tr(
-                Td(H3("Start", cls="info-label")),
+                Td(H3("Start time", cls="info-label")),
                 Td(H3(start.strftime("%Y-%m-%d %H:%M:%S"), cls="info-value")),
             ),
             Tr(
                 Td(H3("Status", cls="info-label")),
                 Td(Status(runID, status), cls="align-right"),
+            ),
+            Tr(
+                Td(H3("Tag", cls="info-label")),
+                Td(AutoCompleteInput('run-tag-input', placeholder="Add tag", value=tag or ""), cls="align-right"),
             ),
             Tr(
                 Td(H3("Commit", cls="info-label")),
@@ -91,6 +97,7 @@ def InfoView(runID: int):
 def build_info_routes(rt):
     rt("/runinfo/change_status")(change_status)
     rt("/runinfo/update_note")(update_note)
+    rt('/autocomplete/tags')(autocomplete_tags)
 
 def update_note(session, runID: int, note: str):
     from __main__ import rTable
@@ -102,3 +109,27 @@ def change_status(session, runID: int, run_status: str):
     socket = rTable.load_run(runID)
     socket.set_status(run_status)
     return Status(runID, run_status, swap=True)
+
+def autocomplete_tags(session, id: str, placeholder: str, search: str, eventType: str, eventKey: str = ""):
+    from __main__ import rTable
+    tags = rTable.active_tags
+    runID = session.get("datagrid", {}).get("selected-rows", [""])[-1]
+    if eventType =="keyup" and eventKey == "Enter":
+        runsocket = rTable.load_run(runID)
+        runsocket.update_tag(search)
+        return AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
+
+    match eventType:
+        case "clicked":
+            runsocket = rTable.load_run(runID)
+            runsocket.update_tag(search)
+            return AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
+        case "keyup" | "focus":
+            suggestions = [tag for tag in tags if search.lower() in tag.lower()]
+            return AutoCompleteInput(id, suggestions=suggestions, placeholder=placeholder, return_suggestions=True)
+        case "blur":
+            tag = rTable.load_run(runID).tag
+            return AutoCompleteInput(id, suggestions=[], value=tag, placeholder=placeholder, oob=True)
+        case _:
+            suggestions = [tag for tag in tags if search.lower() in tag.lower()]
+            return AutoCompleteInput(id, suggestions=suggestions, placeholder=placeholder, return_suggestions=True),

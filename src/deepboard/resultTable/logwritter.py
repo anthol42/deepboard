@@ -390,6 +390,32 @@ class LogWriter:
         with self._cursor as cursor:
             cursor.execute("UPDATE Experiments SET note=? WHERE run_id=?", (note, self.run_id))
 
+    def update_tag(self, tag: str):
+        """
+        Update the tag of the run
+        :param tag: The tag to set (will overwrite the previous one)
+        :return: None
+        """
+        self._run_pre_hooks()
+        if self.disable:
+            return
+        with self._cursor as cursor:
+            cursor.execute("UPDATE Experiments SET tag=? WHERE run_id=?", (tag, self.run_id))
+
+    @property
+    def tag(self) -> str:
+        """
+        Get the tag of the run
+        :return: The tag of the run
+        """
+        with self._cursor as cursor:
+            cursor.execute("SELECT tag FROM Experiments WHERE run_id=?", (self.run_id,))
+            row = cursor.fetchone()
+        if row is None:
+            raise RuntimeError(f"Run {self.run_id} does not exist.")
+
+        return row[0] or "" # If None, return empty string
+
     @property
     def status(self) -> str:
         """

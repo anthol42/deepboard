@@ -10,7 +10,8 @@ requires-python = ">=3.10"
 dependencies = [
     "pillow",
     "matplotlib",
-    "pandas"
+    "pandas",
+    "python-fasthtml>=0.12.33",
 ]
 keywords = ["deepboard", "deep", "board", "pytorch", "torch", "tensorflow", "jax", "tensorboard"]
 classifiers = [
