@@ -33,6 +33,7 @@ def create_database(db_path):
         comment TEXT,
         note TEXT DEFAULT '',
         tag TEXT DEFAULT '',
+        color nchar(6),
         start DATETIME NOT NULL,
         status TEXT CHECK (status IN ('running', 'finished', 'failed')) DEFAULT 'running',
         commit_hash varchar(40),
@@ -89,6 +90,14 @@ def create_database(db_path):
     SELECT DISTINCT tag
     FROM Experiments
     WHERE tag IS NOT NULL AND tag != '';
+    """)
+
+    # Create a ActiveColor view to store active colors
+    cursor.execute("""
+    CREATE VIEW IF NOT EXISTS ActiveColors AS
+    SELECT DISTINCT color
+    FROM Experiments
+    WHERE color IS NOT NULL AND color != '';
     """)
 
     # Create an Image table to store images

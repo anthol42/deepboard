@@ -18,7 +18,8 @@ Next version
 - [X] Add a default theme for tables customizable in the theme file (Like jupyter notebooks)
 - [X] Quick filter in table to quickly filter runs
 - [X] Add possibility to add tag to runs
-- [ ] Add possibility to color run rows
+- [X] Add possibility to color run rows
+- [ ] Unique columns combination are to be configured at table creation
 - [ ] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step and rep as the footer of the card (small text)
 - [ ] For figures / images / fragments, add a filter option by epochs, reps and tags (Can tag fragments when reporting them)
 - [ ] Improve the image viewer with zooming and panning

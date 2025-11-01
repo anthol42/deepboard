@@ -132,3 +132,13 @@ function clickDownloadCSV(gd){
     document.body.removeChild(a);
 }
 
+// Add a custom htmx event called "outsideClick". Triggered when clicking outside an element.
+document.addEventListener('click', (e) => {
+    // For each element that wants outside-click detection
+    document.querySelectorAll('[hx-trigger~="outsideClick"]').forEach((el) => {
+      if (!el.contains(e.target)) {
+        // Fire a bubbling custom event that htmx can react to
+        el.dispatchEvent(new Event('outsideClick', { bubbles: true }));
+      }
+    });
+});

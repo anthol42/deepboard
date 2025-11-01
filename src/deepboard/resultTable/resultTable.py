@@ -12,11 +12,20 @@ import shlex
 from PIL import Image
 from io import BytesIO
 
+from PIL.ImageEnhance import Color
+
 from .logwritter import LogWriter
 from .cursor import Cursor
 from .utils import get_last_commit, get_diff
 from .table_schema import create_database
 from .supported import is_table_supported
+
+class TableTuple(NamedTuple):
+    col_names: List[str]
+    col_ids: List[str]
+    is_hparam: List[bool]
+    row_color: List[str]
+    data: List[List[Any]]
 
 class NoCommitAction(Enum):
     """
@@ -346,7 +355,7 @@ class ResultTable:
             # Insert the column
             cursor.execute("UPDATE ResultDisplay SET display_order=? WHERE Name=?", (order, column))
 
-    def get_results(self, run_id: Optional[int] = None, show_hidden: bool = False) -> Tuple[List[str], List[str], List[bool], List[List[Any]]]:
+    def get_results(self, run_id: Optional[int] = None, show_hidden: bool = False) -> TableTuple:
         """
         This function will build the result table and return it as a list. It will also return the column names and
         their unique id. It will not return the columns that were hidden and will format the table to respect the
@@ -359,7 +368,7 @@ class ResultTable:
         out = {}
         exp_info = {}
         with self.cursor as cursor:
-            command = "SELECT E.run_id, E.experiment, E.config, E.config_hash, E.cli, E.command, E.comment, E.tag, E.start, E.status, E.commit_hash, E.diff, E.hidden, R.metric, R.value " \
+            command = "SELECT E.run_id, E.experiment, E.config, E.config_hash, E.cli, E.command, E.comment, E.tag, E.color, E.start, E.status, E.commit_hash, E.diff, E.hidden, R.metric, R.value " \
                         "FROM Experiments E LEFT JOIN Results R ON E.run_id = R.run_id"
             params = []
             if run_id is not None:
@@ -384,11 +393,12 @@ class ResultTable:
                     command=row[5],
                     comment=row[6],
                     tag=row[7],
-                    start=datetime.fromisoformat(row[8]),
-                    status=row[9],
-                    commit_hash=row[10],
-                    diff=row[11],
-                    hidden=row[12]
+                    color=row[8],
+                    start=datetime.fromisoformat(row[9]),
+                    status=row[10],
+                    commit_hash=row[11],
+                    diff=row[13],
+                    hidden=row[14]
                 )
             out[run_id][metric] = value
 
@@ -401,8 +411,15 @@ class ResultTable:
                    col_order is not None]
         columns.sort(key=lambda x: x[1])
 
+        colors = [row_data["color"] for row_id, row_data in exp_info.items()]
         table = [[row.get(col[0]) for col in columns] for key, row in exp_info.items()]
-        return [col[2] for col in columns], [col[0] for col in columns], [col[3] for col in columns], table
+        return TableTuple(
+            col_names=[col[2] for col in columns],
+            col_ids=[col[0] for col in columns],
+            is_hparam=[col[3] for col in columns],
+            row_color=colors,
+            data=table
+        )
 
     def get_image_by_id(self, image_id: int) -> Optional[Image.Image]:
         """
@@ -430,7 +447,7 @@ class ResultTable:
         :return: The table as a pandas dataframe.
         """
 
-        columns, col_ids, _, data = self.get_results(show_hidden=get_hidden)
+        columns, col_ids, _, _, data = self.get_results(show_hidden=get_hidden)
         df = pd.DataFrame(data, columns=columns)
         if "run_id" in col_ids:
             idx = col_ids.index("run_id")
@@ -446,6 +463,17 @@ class ResultTable:
         """
         with self.cursor as cursor:
             cursor.execute("SELECT tag FROM ActiveTags")
+            rows = cursor.fetchall()
+            return [row[0] for row in rows]
+
+    @property
+    def active_colors(self) -> List[Color]:
+        """
+        Get all the active colors in the result table. It will return a list of colors.
+        :return: A list of colors.
+        """
+        with self.cursor as cursor:
+            cursor.execute("SELECT color FROM ActiveColors")
             rows = cursor.fetchall()
             return [row[0] for row in rows]
 

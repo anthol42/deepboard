@@ -402,6 +402,25 @@ class LogWriter:
         with self._cursor as cursor:
             cursor.execute("UPDATE Experiments SET tag=? WHERE run_id=?", (tag, self.run_id))
 
+    def set_color(self, color: Optional[str] = None):
+        """
+        Set the color of the run
+        :param color: The color to set (hex format without #, e.g. 'ff0000' for red)
+        :return: None
+        """
+        self._run_pre_hooks()
+        if self.disable:
+            return
+
+        if color is not None and 6 < len(color) > 7:
+            raise ValueError(f"Invalid color format, only accept RGB HEX. Got: '{color}'")
+
+        if color is not None and color.startswith('#'):
+            color = color[1:]
+
+        with self._cursor as cursor:
+            cursor.execute("UPDATE Experiments SET color=? WHERE run_id=?", (color, self.run_id))
+
     @property
     def tag(self) -> str:
         """
@@ -415,6 +434,20 @@ class LogWriter:
             raise RuntimeError(f"Run {self.run_id} does not exist.")
 
         return row[0] or "" # If None, return empty string
+
+    @property
+    def color(self) -> Optional[str]:
+        """
+        Get the color of the run
+        :return: The color of the run
+        """
+        with self._cursor as cursor:
+            cursor.execute("SELECT color FROM Experiments WHERE run_id=?", (self.run_id,))
+            row = cursor.fetchone()
+        if row is None:
+            raise RuntimeError(f"Run {self.run_id} does not exist.")
+
+        return row[0]
 
     @property
     def status(self) -> str:

@@ -8,7 +8,7 @@ def hash_id(text):
 def get_unique_from_col(col_id: str):
     from __main__ import rTable
     # Load results from the database
-    col_names, col_ids, _, data = rTable.get_results()
+    col_names, col_ids, _, _, data = rTable.get_results()
 
     # Find the index of the column
     idx = col_ids.index(col_id)

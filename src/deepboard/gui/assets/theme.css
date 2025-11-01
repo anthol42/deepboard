@@ -42,6 +42,7 @@
     --sp-bg-hover: #2F2F2F;
     --sp-tab-bg: #1a1a1a;
     --sp-tab-bg-hover: #4d4d4d;
+    --sp-border: 0.01em solid #555;
 
     --sp-table-bg: #1e1e1e;
     --sp-table-color: var(--secondary-text-color);
