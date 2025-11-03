@@ -47,6 +47,7 @@ This css file contains classes for all artefacts tabs:
     background-color: var(--artefacts-card-bg);
     box-shadow: var(--artefacts-card-shadow);
     padding: 1em;
+    padding-bottom: 0.5em;
     border-radius: var(--artefacts-card-radius);
     display: flex;
     flex-direction: column;
@@ -105,4 +106,22 @@ This css file contains classes for all artefacts tabs:
     color: var(--artefacts-text-color);
     font-family: var(--artefacts-text-font), monospace;
     white-space: pre-wrap;
+}
+
+.artefact-card-footer{
+    width: 100%;
+    display: flex;
+    justify-content: start;
+    margin-top: 1em;
+    padding: 0.5em;
+    border-radius: var(--sp-radius);
+    background-color: var(--sp-bg-color);
+    box-sizing: border-box;
+    gap: 2em;
+    flex-wrap: wrap;
+    border: var(--sp-border);
+}
+
+.stat-cell{
+    font-size: var(--small-text);
 }

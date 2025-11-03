@@ -1,38 +1,34 @@
 from fasthtml.common import *
 from starlette.responses import Response
 from typing import *
-from deepboard.gui.components import Modal, SplitSelector, StatLine, ArtefactGroup
+from deepboard.gui.components import Modal, SplitSelector, StatLine, ArtefactGroup, StatCell
 
-def _get_images_groups(socket, type: Literal["IMAGE", "PLOT"]):
+class ImagesStats(NamedTuple):
+    steps: List[int]
+    epochs: List[int]
+    tags: List[str]
+    reps: List[int]
+
+def _get_images(socket, type: Literal["IMAGE", "PLOT"]):
     if type == "IMAGE":
         images = socket.read_images()
     else:
         images = socket.read_figures()
 
-    index = list({(img["step"], img["epoch"], img["run_rep"], img["split"]) for img in images})
-
-    splits = list({elem[3] for elem in index})
-
-    # Package images
-    images_groups = {}
-    for key in index:
-        cropped_key = key[:-1]  # Remove split
-        if cropped_key not in images_groups:
-            images_groups[cropped_key] = {split: [] for split in splits}
-
-    for img in images:
-        key = img["step"], img["epoch"], img["run_rep"]
-        split = img["split"]
-        images_groups[key][split].append(img["id"])
-
-    # Sort image groups by step, and run_rep
-    return dict(sorted(images_groups.items(), key=lambda x: (x[0][0], x[0][2])))
+    steps = list({img["step"] for img in images})
+    epochs = list({img["epoch"] for img in images})
+    tags = list({img["tag"] for img in images})
+    reps = list({img["run_rep"] for img in images})
+    steps.sort()
+    epochs.sort()
+    tags.sort()
+    reps.sort()
+    return images, ImagesStats(steps, epochs, tags, reps)
 
 
 def ImageComponent(image_id: int):
     """
     Create a single image component with a specific style.
-    :param image: PIL Image object.
     :return: Div containing the image.
     """
     return Div(
@@ -244,37 +240,16 @@ def InteractiveImage(image_id: int):
 
 
 
-def ImageCard(runID: int, step: int, epoch: Optional[int], run_rep: int, img_type: Literal["IMAGE", "PLOT"],
-              selected: Optional[str] = None):
-    from __main__ import rTable
-
-    socket = rTable.load_run(runID)
-    data = _get_images_groups(socket, type=img_type)
-
-    if (step, epoch, run_rep) not in data:
-        avail_splits = []
-        images = []
-    else:
-        images_splits = data[(step, epoch, run_rep)]
-        avail_splits = list(images_splits.keys())
-        avail_splits.sort()
-        if selected is None:
-            selected = avail_splits[0]
-        images = images_splits[selected]
-
+def ImageCard(tag: str, step: int, epoch: Optional[int], run_rep: int, images):
     return Div(
+        ArtefactGroup(*[ImageComponent(img_id) for img_id in images]),
         Div(
-            SplitSelector(runID, avail_splits, selected=selected, step=step, epoch=epoch, run_rep=run_rep,
-                          type=img_type, path="/images/change_split"),
-            Div(
-                StatLine("Step", str(step)),
-                StatLine("Epoch", str(epoch) if epoch is not None else "N/A"),
-                StatLine("Run Repetition", str(run_rep)),
-                cls="artefact-stats-column"
-            ),
-            cls="artefact-card-header",
+            StatCell("Tag", tag) if tag is not None else None,
+            StatCell("Step", str(step)) if step is not None else None,
+            StatCell("Epoch", str(epoch)) if epoch is not None else None,
+            StatCell("Run Rep", str(run_rep)) if run_rep is not None else None,
+            cls="artefact-card-footer",
         ),
-        ArtefactGroup(*[ImageComponent(image_id) for image_id in images]),
         id=f"artefact-card-{step}-{epoch}-{run_rep}",
         cls="artefact-card",
     )
@@ -283,11 +258,31 @@ def ImageTab(session, runID, type: Literal["IMAGE", "PLOT"], swap: bool = False)
     from __main__ import rTable
     socket = rTable.load_run(runID)
 
-    images_groups = _get_images_groups(socket, type=type)
+    images, stats = _get_images(socket, type=type)
+    index = []
+
+    for image in images:
+        idx = (image["tag"], image["step"], image["epoch"], image["run_rep"])
+        if idx not in index:
+            index.append(idx)
+
+    grouped = {}
+    for image in images:
+        idx = (image["tag"], image["step"], image["epoch"], image["run_rep"])
+        if idx not in grouped:
+            grouped[idx] = []
+        grouped[idx].append(image["id"])
+
     return Div(
         *[
-            ImageCard(runID, step, epoch, run_rep, img_type=type)
-            for step, epoch, run_rep in images_groups.keys()
+            ImageCard(
+                tag,
+                step,
+                epoch if len(stats.epochs) > 1 else None,
+                run_rep if len(stats.reps) > 1 else None,
+                image_group
+            )
+            for (tag, step, epoch, run_rep), image_group in grouped.items()
         ],
         style="display; flex; flex-direction: column; align-items: center; justify-content: center;",
         id="images-tab",
@@ -310,30 +305,9 @@ def images_enable(runID, type: Literal["IMAGES", "PLOT"]):
 
 # routes
 def build_images_routes(rt):
-    rt("/images/change_split")(change_split)
     rt("/images/id={image_id}")(load_image)
     rt("/images/open_modal")(open_image_modal)
 
-
-def change_split(session, runID: int, step: int, epoch: Optional[int], run_rep: int, split_select: str, type: str):
-    """
-    Change the split for the images.
-    :param session: The session object.
-    :param step: The step of the images.
-    :param epoch: The epoch of the images.
-    :param run_rep: The run repetition of the images.
-    :param split: The split to change to.
-    :param type: The type of split to change.
-    :return: The updated image card HTML.
-    """
-    return ImageCard(
-        runID,
-        step,
-        epoch,
-        run_rep,
-        img_type=type,
-        selected=split_select,
-    )
 
 def load_image(image_id: int):
     from __main__ import rTable

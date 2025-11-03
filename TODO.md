@@ -20,8 +20,8 @@ Next version
 - [X] Add possibility to add tag to runs
 - [X] Add possibility to color run rows
 - [X] Unique columns combination are to be configured at table creation
-- [ ] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step and rep as the footer of the card (small text)
-- [ ] For figures / images / fragments, add a filter option by epochs, reps and tags (Can tag fragments when reporting them)
+- [X] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step,  rep and tag as the footer of the card (small text)
+- [ ] For figures / images / fragments, add a filter option by epochs, reps and tags
 - [ ] Improve the image viewer with zooming and panning
 - [ ] Add a way to save models (Save artefacts)
 - [ ] Standardize the api (set/update) (get/computed property): One expensive to fetch while the other inexpensive

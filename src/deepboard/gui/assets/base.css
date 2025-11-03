@@ -368,7 +368,7 @@ td.numeric {
   padding: 1em;
   display: flex;
   background-color: var(--menu-bg);
-  border-radius: var(--sp-table-radius);
+  border-radius: var(--sp-radius);
   border: 1px solid var(--dg-border-color);
   z-index: 10;
   gap: 1em;

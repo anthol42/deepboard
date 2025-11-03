@@ -46,10 +46,10 @@ class LogWriter:
         self.buffer = {}
         self.log_count = {}
 
-        self.image_buffer = {}
+        self.image_buffer = []
         self.fig_ids = set()
 
-        self.fragments_buffer = {}
+        self.fragments_buffer = []
 
         self.enabled = True
         self.run_rep = 0
@@ -142,14 +142,14 @@ class LogWriter:
             rows = cursor.fetchall()
             return [Scalar(*row[1:]) for row in rows]
 
-    def add_image(self, image: Union[bytes, Image.Image], step: Optional[int] = None, split: Optional[str] = None,
+    def add_image(self, image: Union[bytes, Image.Image], step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, flush: bool = False):
         """
         Add an image to the resultTable
         :param image: Must be png bytes or a PIL Image object.
         :param step: The global step at which the image was generated. If None, the maximum step is taken from all global
         steps.
-        :param split: The split in which the image was generated.
+        :param tag: A tag describing the image.
         :param epoch: The epoch at which the image was generated. If None, no epoch is saved.
         :param flush: If True, flush all data in memory to the database.
         :return: None
@@ -167,32 +167,32 @@ class LogWriter:
             step = max(self.global_step.values()) if self.global_step else 0
 
         # Add to buffer
-        self._log_image(img_bytes, step, split, self.run_rep, epoch)
+        self._log_image(img_bytes, step, tag, self.run_rep, epoch)
 
         if flush:
             self._flush_all()
 
-    def read_images(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
+    def read_images(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None,
                     repetition: Optional[int] = None) -> List[dict]:
         """
-        Return all images logged in the run with the given step, split and/or epoch.
+        Return all images logged in the run with the given step, tag and/or epoch.
         :param id: The id of the image to read
         :param step: The step at which the image was generated. If None, all images are returned.
-        :param split: The split in which the images were generated. If None, all splits are returned.
+        :param tag: The tag in which the images were generated. If None, all tags are returned.
         :param epoch: The epoch at which the images were generated. If None, all epochs are returned.
         :param repetition: The repetition of the images. If None, all images are returned.
         :return: A list of image bytes
         """
-        return self._get_images(id, step, split, epoch, repetition, img_type="IMAGE")
+        return self._get_images(id, step, tag, epoch, repetition, img_type="IMAGE")
 
 
-    def detect_and_log_figures(self, step: Optional[int] = None, split: Optional[str] = None,
+    def detect_and_log_figures(self, step: Optional[int] = None, tag: Optional[str] = None,
                                epoch: Optional[int] = None, flush: bool = False):
         """
         Detect matplotlib figures that are currently open and log them to the result table. (Save them as png).
         :param step: The global step at which the image was generated. If None, the maximum step is taken from all global
         steps.
-        :param split: The split in which the images were generated.
+        :param tag: A tag describing the figures.
         :param epoch: The epoch at which the images were generated. If None, no epoch is saved.
         :param flush: If True, flush all data in memory to the database.
         :return: None
@@ -216,19 +216,19 @@ class LogWriter:
             self.fig_ids.add(fig_hash)
             img_bytes = buffer.getvalue()
 
-            self._log_image(img_bytes, step, split, self.run_rep, epoch, type="PLOT")
+            self._log_image(img_bytes, step, tag, self.run_rep, epoch, type="PLOT")
 
         if flush:
             self._flush_all()
 
-    def add_text(self, text: str, step: Optional[int] = None, split: Optional[str] = None,
+    def add_text(self, text: str, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, flush: bool = False):
         """
         Add a text sample to the resultTable
         :param text: Must be a string
         :param step: The global step at which the image was generated. If None, the maximum step is taken from all global
         scalar steps.
-        :param split: The split in which the image was generated.
+        :param tag: A tag describing the text.
         :param epoch: The epoch at which the image was generated. If None, no epoch is saved.
         :param flush: If True, flush all data in memory to the database.
         :return: None
@@ -238,31 +238,31 @@ class LogWriter:
             # Take the max step from scalars
             step = max(self.global_step.values()) if self.global_step else 0
 
-        self._log_fragment(text, step, split, self.run_rep, epoch, type="RAW")
+        self._log_fragment(text, step, tag, self.run_rep, epoch, type="RAW")
         if flush:
             self._flush_all()
 
-    def read_text(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None,
+    def read_text(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, repetition: Optional[int] = None):
         """
-        Return all text samples logged in the run with the given id, step, split and/or epoch.
+        Return all text samples logged in the run with the given id, step, tag and/or epoch.
         :param id: The id of the text sample to read
         :param step: The step at which the text was generated. If None, all text samples are returned.
-        :param split: The split in which the texts were generated. If None, all splits are returned.
+        :param tag: The tag describing the text. If None, all tags are returned.
         :param epoch: The epoch at which the texts were generated. If None, all epochs are returned.
         :param repetition: The repetition of the run. If None, all text samples are returned.
         :return: A list of text samples
         """
-        return self._get_fragments(id, step, split, epoch, repetition, fragment_type="RAW")
+        return self._get_fragments(id, step, tag, epoch, repetition, fragment_type="RAW")
 
-    def add_fragment(self, content: str, step: Optional[int] = None, split: Optional[str] = None,
+    def add_fragment(self, content: str, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, flush: bool = False):
         """
         Add a html fragment to the resultTable
         :param content: Must be a string containing valid HTML content.
         :param step: The global step at which the image was generated. If None, the maximum step is taken from all global
         scalar steps.
-        :param split: The split in which the image was generated.
+        :param tag: A tag describing the fragment.
         :param epoch: The epoch at which the image was generated. If None, no epoch is saved.
         :param flush: If True, flush all data in memory to the database.
         :return: None
@@ -272,35 +272,35 @@ class LogWriter:
             # Take the max step from scalars
             step = max(self.global_step.values()) if self.global_step else 0
 
-        self._log_fragment(content, step, split, self.run_rep, epoch, type="HTML")
+        self._log_fragment(content, step, tag, self.run_rep, epoch, type="HTML")
         if flush:
             self._flush_all()
 
-    def read_fragment(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None,
+    def read_fragment(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, repetition: Optional[int] = None):
         """
-        Return all html fragments logged in the run with the given id, step, split and/or epoch.
+        Return all html fragments logged in the run with the given id, step, tag and/or epoch.
         :param id: The id of the html fragment to read
         :param step: The step at which the html fragment was generated. If None, all html fragment are returned.
-        :param split: The split in which the html fragments were generated. If None, all splits are returned.
+        :param tag: The tag describing the fragment. If None, all tags are returned.
         :param epoch: The epoch at which the html fragments were generated. If None, all epochs are returned.
         :param repetition: The repetition of the run. If None, all html fragment are returned.
         :return: A list of html fragment
         """
-        return self._get_fragments(id, step, split, epoch, repetition, fragment_type="HTML")
+        return self._get_fragments(id, step, tag, epoch, repetition, fragment_type="HTML")
 
-    def read_figures(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None,
+    def read_figures(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None,
                     repetition: Optional[int] = None):
         """
-        Return all figures logged in the run with the given step, split and/or epoch.
+        Return all figures logged in the run with the given step, tag and/or epoch.
         :param id: The id of the figure to read. If None, all figures are returned.
         :param step: The step at which the figure was generated. If None, all figures are returned.
-        :param split: The split in which the figures were generated. If None, all splits are returned.
+        :param tag: The tag describing the figures. If None, all tags are returned.
         :param epoch: The epoch at which the figures were generated. If None, all epochs are returned.
         :param repetition: The repetition of the figures. If None, all figures are returned.
         :return:
         """
-        return self._get_images(id, step, split, epoch, repetition, img_type="PLOT")
+        return self._get_images(id, step, tag, epoch, repetition, img_type="PLOT")
 
     def add_hparams(self, **kwargs):
         """
@@ -494,9 +494,9 @@ class LogWriter:
         for hook in self.pre_hooks:
             hook()
 
-    def _get_fragments(self, id: Optional[int], step: Optional[int], split: Optional[str], epoch: Optional[int],
+    def _get_fragments(self, id: Optional[int], step: Optional[int], tag: Optional[str], epoch: Optional[int],
                     repetition: Optional[int], fragment_type: Literal["RAW", "HTML"]) -> List[dict]:
-        command = f"SELECT id_, step, epoch, run_rep, split, fragment FROM Fragments WHERE run_id=? AND fragment_type='{fragment_type}'"
+        command = f"SELECT id_, step, epoch, run_rep, tag, fragment FROM Fragments WHERE run_id=? AND fragment_type='{fragment_type}'"
         params = [self.run_id]
         if id is not None:
             command += " AND id_=?"
@@ -506,9 +506,9 @@ class LogWriter:
             command += " AND step=?"
             params.append(step)
 
-        if split is not None:
-            command += " AND split=?"
-            params.append(split)
+        if tag is not None:
+            command += " AND tag=?"
+            params.append(tag)
 
         if epoch is not None:
             command += " AND epoch=?"
@@ -527,13 +527,13 @@ class LogWriter:
                 step=row[1],
                 epoch=row[2],
                 run_rep=row[3],
-                split=row[4],
+                tag=row[4],
                 fragment=row[5]
             ) for row in rows]
 
-    def _get_images(self, id: Optional[int], step: Optional[int], split: Optional[str], epoch: Optional[int],
+    def _get_images(self, id: Optional[int], step: Optional[int], tag: Optional[str], epoch: Optional[int],
                     repetition: Optional[int], img_type: Literal["IMAGE", "PLOT"]) -> List[dict]:
-        command = f"SELECT id_, step, epoch, run_rep, split, image FROM Images WHERE run_id=? AND img_type='{img_type}'"
+        command = f"SELECT id_, step, epoch, run_rep, tag, image FROM Images WHERE run_id=? AND img_type='{img_type}'"
         params = [self.run_id]
         if id is not None:
             command += " AND id_=?"
@@ -543,9 +543,9 @@ class LogWriter:
             command += " AND step=?"
             params.append(step)
 
-        if split is not None:
-            command += " AND split=?"
-            params.append(split)
+        if tag is not None:
+            command += " AND tag=?"
+            params.append(tag)
 
         if epoch is not None:
             command += " AND epoch=?"
@@ -564,7 +564,7 @@ class LogWriter:
                 step=row[1],
                 epoch=row[2],
                 run_rep=row[3],
-                split=row[4],
+                tag=row[4],
                 image=Image.open(BytesIO(row[5]))
             ) for row in rows]
 
@@ -602,45 +602,41 @@ class LogWriter:
         if len(self.buffer[tag]) >= self.flush_each:
             self._flush(tag)
 
-    def _log_fragment(self, fragment: str, step: int, split: Optional[int], repetition: int, epoch: Optional[int],
+    def _log_fragment(self, fragment: str, step: int, tag: Optional[int], repetition: int, epoch: Optional[int],
                    type: Literal["RAW", "HTML"] = "RAW"):
         """
         Log a text or html fragment to the resultTable.
         :param fragment: The content to log
         :param step: The step
-        :param split: The split that made it
+        :param tag: A tag describing the fragment
         :param repetition: The run repetition
         :param epoch: The epoch
         :param type: Raw (for text only) or HTML (for html content)
         :return: None
         """
-        if split not in self.fragments_buffer:
-            self.fragments_buffer[split] = []
 
-        self.fragments_buffer[split].append((self.run_id, step, epoch, repetition, type, split, fragment))
+        self.fragments_buffer.append((self.run_id, step, epoch, repetition, type, tag, fragment))
 
-        if len(self.fragments_buffer[split]) >= self.flush_each:
-            self._flush_fragment(split)
+        if len(self.fragments_buffer) >= self.flush_each:
+            self._flush_fragments()
 
-    def _log_image(self, image: bytes, step: int, split: Optional[int], repetition: int, epoch: Optional[int],
+    def _log_image(self, image: bytes, step: int, tag: Optional[int], repetition: int, epoch: Optional[int],
                    type: Literal["IMAGE", "PLOT"] = "IMAGE"):
         """
         Store the image log into the buffer, and flush the buffer if it is full.
         :param image: The image bytes
         :param step: The step
-        :param split: The split
+        :param tag: A tag describing the image
         :param repetition: The run repetition
         :param epoch: The epoch
         :param type: The type of the image, either "IMAGE" or "PLOT". Default is "IMAGE".
         :return: None
         """
-        if split not in self.image_buffer:
-            self.image_buffer[split] = []
 
-        self.image_buffer[split].append((self.run_id, step, epoch, repetition, type, split, image))
+        self.image_buffer.append((self.run_id, step, epoch, repetition, type, tag, image))
 
-        if len(self.image_buffer[split]) >= self.flush_each:
-            self._flush_image(split)
+        if len(self.image_buffer) >= self.flush_each:
+            self._flush_images()
 
     def _flush_all(self):
         """
@@ -652,36 +648,34 @@ class LogWriter:
             self._flush(tag)
 
         # Flush all the images
-        for split in self.image_buffer.keys():
-            self._flush_image(split)
+        self._flush_images()
 
         # Flush all the fragments
-        for split in self.fragments_buffer.keys():
-            self._flush_fragment(split)
+        self._flush_fragments()
 
-    def _flush_image(self, split):
+    def _flush_images(self):
         query = """
-                INSERT INTO Images (run_id, step, epoch, run_rep, img_type, split, image)
+                INSERT INTO Images (run_id, step, epoch, run_rep, img_type, tag, image)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """
         if not self.disable:
             with self._cursor as cursor:
-                cursor.executemany(query, self.image_buffer[split])
+                cursor.executemany(query, self.image_buffer)
 
         # Reset the buffer
-        self.image_buffer[split] = []
+        self.image_buffer = []
 
-    def _flush_fragment(self, split):
+    def _flush_fragments(self):
         query = """
-                INSERT INTO Fragments (run_id, step, epoch, run_rep, fragment_type, split, fragment)
+                INSERT INTO Fragments (run_id, step, epoch, run_rep, fragment_type, tag, fragment)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """
         if not self.disable:
             with self._cursor as cursor:
-                cursor.executemany(query, self.fragments_buffer[split])
+                cursor.executemany(query, self.fragments_buffer)
 
         # Reset the buffer
-        self.fragments_buffer[split] = []
+        self.fragments_buffer = []
 
     def _flush(self, tag: str):
         """

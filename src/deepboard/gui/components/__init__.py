@@ -9,3 +9,4 @@ from .artefact_group import ArtefactGroup
 from .quick_filter import QuickFilter
 from .plotly2fh import plotly2fasthtml_download
 from .autocomplete import AutoCompleteInput
+from .stat_cell import StatCell

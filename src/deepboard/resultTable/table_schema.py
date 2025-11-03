@@ -135,7 +135,7 @@ def create_database(db_path, unique_columns: tuple[str]):
         epoch INTEGER,
         run_rep INTEGER NOT NULL,
         img_type varchar(64) NOT NULL, -- IMAGE or PLOT
-        split varchar(128),
+        tag TEXT,
         image BLOB NOT NULL,
         FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
     );
@@ -150,7 +150,7 @@ def create_database(db_path, unique_columns: tuple[str]):
         epoch INTEGER,
         run_rep INTEGER NOT NULL,
         fragment_type varchar(64) NOT NULL, -- RAW or HTML
-        split varchar(128),
+        tag TEXT,
         fragment text NOT NULL,
         FOREIGN KEY(run_id) REFERENCES Experiments(run_id)
     );
