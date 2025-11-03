@@ -60,13 +60,16 @@ class ResultTable:
 
     - Finally, you can interact with the table with the different available methods.
     """
-    def __init__(self, db_path: str = "results/result_table.db", nocommit_action: NoCommitAction = NoCommitAction.WARN):
+    def __init__(self, db_path: str = "results/result_table.db", nocommit_action: NoCommitAction = NoCommitAction.WARN,
+                 unique_columns: Tuple[str] = ("experiment", "config", "config_hash", "cli", "comment")):
         """
         :param db_path: The path to the databse file
         :param nocommit_action: What to do if changes are not committed
+        :param unique_columns: Which columns are considered to define a unique run. All of these columns must be unique
+        together to define a unique run. Please, do not change these columns once the table is created.
         """
         if not os.path.exists(db_path):
-            self._create_database(db_path)
+            self._create_database(db_path, unique_columns)
 
         db_path = PurePath(db_path) if not isinstance(db_path, PurePath) else db_path
 
@@ -83,6 +86,23 @@ class ResultTable:
         is_supported, msg = is_table_supported(version)
         if not is_supported:
             raise RuntimeError(msg)
+
+        # Check if the unique columns are the same as the one in the table
+        with self.cursor as cursor:
+            cursor.execute('SELECT value FROM Meta WHERE key="unique_columns"')
+            row = cursor.fetchone()
+            if row is None:
+                raise RuntimeError("The database might be corrupted as no stored unique columns were found.")
+
+            existing_unique_columns = tuple(row[0].split(", "))
+            if set(existing_unique_columns) != set(unique_columns): # Order invariant comparison
+                raise RuntimeError(f"The unique columns specified do not match the ones in the database. "
+                                   f"Specified: {unique_columns}, in DB: {existing_unique_columns}.\n"
+                                   f"Please, initialize the ResultTable class with the same unique columns as the one "
+                                   f"used to create the database. Ex: .. = ResultTable(db_path=\"{db_path}\", unique_columns={existing_unique_columns})\n"
+                                   f"Or create a new database with the desired unique columns.")
+
+        self.unique_columns = unique_columns
 
     def new_run(self, experiment_name: str,
                 config_path: Optional[Union[str, PurePath]] = None,
@@ -121,18 +141,26 @@ class ResultTable:
         comment = "" if comment is None else comment
         cli = " ".join([f'{key}={value}' for key, value in cli.items()]) if cli is not None else ""
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
+        cols = {
+            "experiment": experiment_name,
+            "config": config_str,
+            "config_hash": config_hash,
+            "cli": cli,
+            "command": command,
+            "comment": comment,
+            "tag": tag,
+            "commit_hash": commit,
+            "diff": diff
+        }
         if not disable:
             with self.cursor as cursor:
                 # Step 1: Check if the configuration already exists
-                cursor.execute("""
+                condition = " AND ".join([f"{col}=?" for col in self.unique_columns])
+                cursor.execute(f"""
                         SELECT * FROM Experiments
-                        WHERE experiment = ?
-                          AND config = ?
-                          AND config_hash = ?
-                          AND cli = ?
-                          AND comment = ?
+                        WHERE {condition}
                           AND hidden = 0;
-                """, (experiment_name, config_str, config_hash, cli, comment))
+                """, tuple(cols[col] for col in self.unique_columns))
                 result = cursor.fetchall()
                 if result is not None:
                     status = [res[8] for res in result]
@@ -153,7 +181,7 @@ class ResultTable:
                     if status is not None and status != "failed":
                         # If here, the run does exist and is not failed. So we will not create a new one
                         raise RuntimeError(f"Configuration has already been run with runID {run_id}. Consider changing "
-                                           f"parameter to avoid duplicate runs or add a comment.")
+                                           f"parameter to avoid duplicate runs.")
                     elif run_id is not None and status == "failed":
                         # If here, the run does exist, but failed. So we will retry it
                         self._create_run_with_id(run_id, experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff)
@@ -590,5 +618,5 @@ class ResultTable:
         return hash_func.hexdigest()
 
     @staticmethod
-    def _create_database(db_path):
-        create_database(db_path)
+    def _create_database(db_path, unique_columns: Tuple[str]):
+        create_database(db_path, unique_columns)

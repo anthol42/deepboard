@@ -1,7 +1,8 @@
 import sqlite3
 from ..__version__ import __version__
+import os
 
-def create_database(db_path):
+def create_database(db_path, unique_columns: tuple[str]):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -41,6 +42,30 @@ def create_database(db_path):
         hidden INTEGER NOT NULL DEFAULT 0
         );
     """)
+
+    # Validate that unique_columns are valid
+    valid_cols = (
+        "experiment",
+        "config",
+        "config_hash",
+        "cli",
+        "command",
+        "comment",
+        "tag",
+        "commit_hash",
+        "diff")
+    for col in unique_columns:
+        if col not in valid_cols:
+            # Remove the database to avoid incomplete DBs
+            conn.close()
+            os.remove(db_path)
+            raise ValueError(f"Invalid unique column: {col}! Must be one of {{{', '.join(valid_cols)}}}")
+
+    # Insert the unique columns
+    cursor.execute("""
+    INSERT OR IGNORE INTO Meta (key, value) VALUES
+    ('unique_columns', ?);
+    """, (", ".join(unique_columns), ))
 
     # Create Results table
     cursor.execute("""
@@ -175,8 +200,10 @@ def create_database(db_path):
                    FROM ResultDisplay;
                    END;
                    """)
+
     # Create index for speed
+    command = ", ".join(unique_columns)
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_config_hash ON Experiments(experiment, config, config_hash, cli, comment);")
+        f"CREATE INDEX IF NOT EXISTS unique_exp ON Experiments({command});")
     conn.commit()
     conn.close()

@@ -12,7 +12,7 @@ data.
 - Now can download graph data as CSV files from the GUI
 - Now can add a tag to runs, for easier filtering and organization.
 - Now can color run rows
-- 
+- Criteria to define a unique experiment are now configurable at table creation.
 
 
 ### Fixed bugs
