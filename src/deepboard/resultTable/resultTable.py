@@ -60,16 +60,18 @@ class ResultTable:
 
     - Finally, you can interact with the table with the different available methods.
     """
+    DEFAULT_UNIQUE_COLS = ("experiment", "config", "config_hash", "cli", "comment")
     def __init__(self, db_path: str = "results/result_table.db", nocommit_action: NoCommitAction = NoCommitAction.WARN,
-                 unique_columns: Tuple[str] = ("experiment", "config", "config_hash", "cli", "comment")):
+                 unique_columns: Optional[Tuple[str]] = None):
         """
         :param db_path: The path to the databse file
         :param nocommit_action: What to do if changes are not committed
         :param unique_columns: Which columns are considered to define a unique run. All of these columns must be unique
-        together to define a unique run. Please, do not change these columns once the table is created.
+        together to define a unique run. Please, do not change these columns once the table is created. If not specified,
+        the columns used when creating the database will be used.
         """
         if not os.path.exists(db_path):
-            self._create_database(db_path, unique_columns)
+            self._create_database(db_path, unique_columns or self.DEFAULT_UNIQUE_COLS)
 
         db_path = PurePath(db_path) if not isinstance(db_path, PurePath) else db_path
 
@@ -95,6 +97,9 @@ class ResultTable:
                 raise RuntimeError("The database might be corrupted as no stored unique columns were found.")
 
             existing_unique_columns = tuple(row[0].split(", "))
+            if unique_columns is None:
+                unique_columns = existing_unique_columns
+
             if set(existing_unique_columns) != set(unique_columns): # Order invariant comparison
                 raise RuntimeError(f"The unique columns specified do not match the ones in the database. "
                                    f"Specified: {unique_columns}, in DB: {existing_unique_columns}.\n"
