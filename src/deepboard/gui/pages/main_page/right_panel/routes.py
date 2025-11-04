@@ -95,7 +95,6 @@ def clear_filters(session, type: str, element: str):
         return
 
     session["artefact-filters"][type][element] = []
-    print(session["artefact-filters"])
     runID = session.get("datagrid", {}).get('selected-rows', [])[-1]
     # Refresh according tab content
     match type:

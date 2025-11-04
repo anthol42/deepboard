@@ -24,11 +24,13 @@ Next version
 - [X] Unique columns combination are to be configured at table creation
 - [X] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step,  rep and tag as the footer of the card (small text)
 - [X] For figures / images / fragments, add a filter option by epochs, reps and tags
-- [ ] Improve the image viewer with zooming and panning
+- [X] Improve the image viewer with zooming and panning
 - [ ] Add a way to save models (Save artefacts)
 - [ ] Standardize the api (set/update) (get/computed property): One expensive to fetch while the other inexpensive
 - [X] Add a way to download graph data as csv
 
 Next next version
+- [ ] Full code refactor: Refactor code structure and how components are defined (their logic) and interact, to make the project more scalable and maintainable.
+- [ ] Add tests: Unit tests and integration tests to ensure code quality and prevent regressions
 - [ ] Match tensorboard basic features
 - [ ] Add a full screen mode for single run view

@@ -60,6 +60,8 @@ app = cls(
         plotly_headers,
         Script(src="assets/base.js"),
         SortableColumnsJs(),
+        # Image viewer
+        Script(src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4/dist/panzoom.min.js")
     ),
     static_path='assets'
 )
