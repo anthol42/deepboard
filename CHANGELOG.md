@@ -22,6 +22,7 @@ data.
 - Now can log hyperparameters with NULL values
 - Now, hyperparameters do not lose precision when displayed in the resultTable in the GUI
 - Removed debug prints when loading fragments
+- And more minor bug fixes
 
 ## 0.2.3
 - Fix a bug when a run had failed, we couldn't re-run it.

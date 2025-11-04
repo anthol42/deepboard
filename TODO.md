@@ -7,6 +7,7 @@ Bugs:
 - [X] It prints the fragment when returned in the GUI
 - [ ] When multiple tab in the side panel, when clicking a tab, the horizontal scroll is reset, which shouldn't happen. The scroll position should be maintained.
 - [ ] Fix bug when coloring rows with a filter. (Does not color the good row)
+- [ ] Auto update result table when updating tag
 
 Next version
 - [X] Add a major version number in the database to avoid running a database with a wrong version

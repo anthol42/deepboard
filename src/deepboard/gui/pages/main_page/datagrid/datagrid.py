@@ -3,7 +3,7 @@ from fasthtml.common import *
 from .row import Row
 from .header import Header, HeaderRename
 
-def apply_filters(data: List[List[Any]], col_ids: list[str], filters: dict) -> List[List[Any]]:
+def apply_filters(data: List[List[Any]], colors: List[str], col_ids: list[str], filters: dict) -> Tuple[List[List[Any]], List[str]]:
     for col_id, excluded_values in filters.items():
         if not excluded_values: # Empty filter
             continue
@@ -12,9 +12,10 @@ def apply_filters(data: List[List[Any]], col_ids: list[str], filters: dict) -> L
             continue
 
         col_idx = col_ids.index(col_id)
+        colors = [color for row, color in zip(data, colors) if str(row[col_idx]) not in excluded_values]
         data = [row for row in data if str(row[col_idx]) not in excluded_values]
 
-    return data
+    return data, colors
 
 def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, fullscreen: bool = False):
     """
@@ -36,17 +37,18 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, ful
 
     filters = session["datagrid"].get("filters", {})
     # Apply filters
-    data = apply_filters(data, col_ids, filters)
-
+    data, row_colors = apply_filters(data, row_colors, col_ids, filters)
     if sort_by is not None and sort_order is not None:
-        data = sorted(
-            data,
-            key=lambda x: (
-                x[col_ids.index(sort_by)] is None,  # True = 1, False = 0 — Nones last
-                x[col_ids.index(sort_by)]
-            ),
+        sort_idx = col_ids.index(sort_by)
+        indices = sorted(
+            range(len(data)),
+            key=lambda i: (data[i][sort_idx] is None, data[i][sort_idx]),
             reverse=(sort_order == "desc")
         )
+
+        # Reorder both lists using the sorted indices
+        data = [data[i] for i in indices]
+        row_colors = [row_colors[i] for i in indices]
 
     run_ids = [row[col_ids.index("run_id")] for row in data]
     rows_hidden = rTable.get_hidden_runs() if show_hidden else []
