@@ -29,9 +29,9 @@ def CompareSetup(session, swap: bool = False):
     repetitions = [socket.get_repetitions() for socket in sockets]
     names = [getName(rTable.get_experiment_raw(runID)) for runID in raw_labels]
     if any(len(rep) > 1 for rep in repetitions):
-        labels = [(f"{label}.{rep} — {name}" if name is not None else f"{label}.{rep}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}.{rep}" in hidden_lines) for i, (label, name) in enumerate(zip(raw_labels, names)) for rep in sockets[i].get_repetitions()]
+        labels = [(f"{label}.{rep} — {name}" if name is not None else f"{label}.{rep}", f"{label}.{rep}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}.{rep}" in hidden_lines) for i, (label, name) in enumerate(zip(raw_labels, names)) for rep in sockets[i].get_repetitions()]
     else:
-        labels = [(f"{label} — {name}" if name is not None else f"{label}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}" in hidden_lines) for
+        labels = [(f"{label} — {name}" if name is not None else f"{label}", f"{label}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}" in hidden_lines) for
                   i, (label, name) in enumerate(zip(raw_labels, names))]
     return Div(
         H1("Setup", cls="chart-scalar-title"),

@@ -209,22 +209,22 @@ def change_chart_type(session, runIDs: str, step: bool):
         Charts(session, int(runID), swap=True)
             )
 
-def hide_line(session, runIDs: str, label: str):
+def hide_line(session, runIDs: str, curveID: str):
     if 'hidden_lines' not in session["scalars"]:
         session["scalars"]['hidden_lines'] = []
     runIds = runIDs.split(",")
     runID = runIds[0]
-    session["scalars"]['hidden_lines'].append(label)
+    session["scalars"]['hidden_lines'].append(curveID)
     return ScalarTab(session, runID, swap=True)
 
 
-def show_line(session, runIDs: str, label: str):
+def show_line(session, runIDs: str, curveID: str):
     if 'hidden_lines' not in session["scalars"]:
         session["scalars"]['hidden_lines'] = []
     runIds = runIDs.split(",")
     runID = runIds[0]
-    if label in session["scalars"]['hidden_lines']:
-        session["scalars"]['hidden_lines'].remove(label)
+    if curveID in session["scalars"]['hidden_lines']:
+        session["scalars"]['hidden_lines'].remove(curveID)
 
     return ScalarTab(session, runID, swap=True)
 

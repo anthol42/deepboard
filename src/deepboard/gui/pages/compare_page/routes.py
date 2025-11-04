@@ -35,18 +35,18 @@ def change_chart_scale(session, runIDs: str, log: bool):
             ChartCardList(session, swap=True)
     )
 
-def hide_line(session, runIDs: str, label: str):
+def hide_line(session, runIDs: str, curveID: str):
     if 'hidden_lines' not in session["compare"]:
         session["compare"]['hidden_lines'] = []
-    session["compare"]['hidden_lines'].append(label)
+    session["compare"]['hidden_lines'].append(curveID)
     return CompareSetup(session, swap=True), ChartCardList(session, swap=True)
 
 
-def show_line(session, runIDs: str, label: str):
+def show_line(session, runIDs: str, curveID: str):
     if 'hidden_lines' not in session["compare"]:
         session["compare"]['hidden_lines'] = []
-    if label in session["compare"]['hidden_lines']:
-        session["compare"]['hidden_lines'].remove(label)
+    if curveID in session["compare"]['hidden_lines']:
+        session["compare"]['hidden_lines'].remove(curveID)
 
     return CompareSetup(session, swap=True), ChartCardList(session, swap=True)
 
