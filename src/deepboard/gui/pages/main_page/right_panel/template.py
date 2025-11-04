@@ -1,5 +1,4 @@
 from fasthtml.common import *
-from datetime import datetime
 from .scalars import ScalarTab, scalar_enable
 from .images import ImageTab, images_enable
 from .fragments import FragmentTab, fragment_enable
@@ -14,7 +13,7 @@ def reset_scalar_session(session):
         chart_type='step'
     )
 
-def RightPanelContent(session, run_id: int, active_tab: str):
+def Tabs(session, run_id, active_tab: str, inner: bool = False):
     from __main__ import rTable
     scalar_is_available = scalar_enable(run_id)
     images_is_available = images_enable(run_id, type="IMAGES")
@@ -34,7 +33,63 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         active_tab = "fragments"
     if active_tab == "fragments" and not fragment_is_available:
         active_tab = "config"
+    tabs = []
 
+    # If the runID does not have any scalars logged, we do not show the scalars tab
+    if scalar_is_available:
+        tabs.append(
+            Div('Scalars', cls='tab active' if active_tab == 'scalars' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#sd-tab-menu')
+        )
+
+    if images_is_available:
+        tabs.append(
+            Div('Images', cls='tab active' if active_tab == 'images' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=images', hx_target='#sd-tab-menu')
+        )
+
+    if plot_is_available:
+        tabs.append(
+            Div('Figures', cls='tab active' if active_tab == 'figures' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=figures', hx_target='#sd-tab-menu')
+        )
+
+    if text_is_available:
+        tabs.append(
+            Div('Text', cls='tab active' if active_tab == 'text' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=text', hx_target='#sd-tab-menu')
+        )
+
+    if fragment_is_available:
+        tabs.append(
+            Div('Fragments', cls='tab active' if active_tab == 'fragments' else 'tab',
+                hx_get=f'/fillpanel?run_id={run_id}&tab=fragments', hx_target='#sd-tab-menu')
+        )
+
+    tabs += [
+        Div('Config', cls='tab active' if active_tab == 'config' else 'tab',
+            hx_get=f'/fillpanel?run_id={run_id}&tab=config', hx_target='#sd-tab-menu'),
+        Div('HParams', cls='tab active' if active_tab == 'hparams' else 'tab',
+            hx_get=f'/fillpanel?run_id={run_id}&tab=hparams', hx_target='#sd-tab-menu'),
+        Div('Info', cls='tab active' if active_tab == 'run_info' else 'tab',
+            hx_get=f'/fillpanel?run_id={run_id}&tab=run_info', hx_target='#sd-tab-menu'),
+    ]
+    if inner:
+        return Div(
+            *tabs,
+            style="display: flex;"
+        )
+    else:
+        return Div(
+                Div(
+                    *tabs,
+                    style="display: flex;"
+                ),
+                cls='tab-menu',
+                id="sd-tab-menu",
+            )
+
+def TabContent(session, run_id: int, active_tab: str, swap: bool = False):
     if active_tab == 'scalars':
         tab_content = ScalarTab(session, run_id)
     elif active_tab == 'images':
@@ -55,64 +110,18 @@ def RightPanelContent(session, run_id: int, active_tab: str):
         tab_content = Div(
             P("Invalid tab selected.", cls="error-message")
         )
+
+    return Div(
+        tab_content,
+        id='sd-tab-content', cls='tab-content',
+        hx_swap_oob="true" if swap else None,
+    )
+def RightPanelContent(session, run_id: int, active_tab: str):
     run_name = "DEBUG" if run_id == -1 else run_id
-    tabs = []
-
-    # If the runID does not have any scalars logged, we do not show the scalars tab
-    if scalar_is_available:
-        tabs.append(
-            Div('Scalars', cls='tab active' if active_tab == 'scalars' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#right-panel-content',
-                hx_swap='outerHTML')
-        )
-
-    if images_is_available:
-        tabs.append(
-            Div('Images', cls='tab active' if active_tab == 'images' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=images', hx_target='#right-panel-content',
-                hx_swap='outerHTML')
-        )
-
-    if plot_is_available:
-        tabs.append(
-            Div('Figures', cls='tab active' if active_tab == 'figures' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=figures', hx_target='#right-panel-content',
-                hx_swap='outerHTML')
-        )
-
-    if text_is_available:
-        tabs.append(
-            Div('Text', cls='tab active' if active_tab == 'text' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=text', hx_target='#right-panel-content',
-                hx_swap='outerHTML')
-        )
-
-    if fragment_is_available:
-        tabs.append(
-            Div('Fragments', cls='tab active' if active_tab == 'fragments' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=fragments', hx_target='#right-panel-content',
-                hx_swap='outerHTML')
-        )
-
-    tabs += [
-        Div('Config', cls='tab active' if active_tab == 'config' else 'tab',
-            hx_get=f'/fillpanel?run_id={run_id}&tab=config', hx_target='#right-panel-content', hx_swap='outerHTML'),
-        Div('HParams', cls='tab active' if active_tab == 'hparams' else 'tab',
-            hx_get=f'/fillpanel?run_id={run_id}&tab=hparams', hx_target='#right-panel-content', hx_swap='outerHTML'),
-        Div('Info', cls='tab active' if active_tab == 'run_info' else 'tab',
-            hx_get=f'/fillpanel?run_id={run_id}&tab=run_info', hx_target='#right-panel-content',
-            hx_swap='outerHTML'),
-    ]
     return Div(
         H1(f"Run: {run_name}"),
-        Div(
-            *tabs,
-            cls='tab-menu'
-        ),
-        Div(
-            tab_content,
-            id='tab-content', cls='tab-content'
-        ),
+        Tabs(session, run_id, active_tab),
+        TabContent(session, run_id, active_tab),
         cls="right-panel-content",
         id="right-panel-content"
     ),
@@ -148,4 +157,4 @@ def RightPanel(session, closed: bool = False):
 
 
 def fill_panel(session, run_id: int, tab: str):
-    return RightPanelContent(session, run_id, tab)
+    return Tabs(session, run_id, tab, inner=True), TabContent(session, run_id, tab, swap=True)
