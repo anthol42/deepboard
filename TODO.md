@@ -6,8 +6,9 @@ Bugs:
 - [X] Close cursor as soon as possible to avoid 'database is locked' errors
 - [X] It prints the fragment when returned in the GUI
 - [ ] When multiple tab in the side panel, when clicking a tab, the horizontal scroll is reset, which shouldn't happen. The scroll position should be maintained.
-- [ ] Fix bug when coloring rows with a filter. (Does not color the good row)
-- [ ] Auto update result table when updating tag
+- [X] Fix bug when coloring rows with a filter. (Does not color the good row)
+- [X] Auto update result table when updating tag
+- [ ] Compare page: Cannot hide lines
 
 Next version
 - [X] Add a major version number in the database to avoid running a database with a wrong version

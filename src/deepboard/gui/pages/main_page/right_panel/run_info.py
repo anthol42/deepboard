@@ -125,7 +125,8 @@ def InfoView(runID: int):
             ),
             cls="info-table",
         ),
-        DiffView(diff))
+        DiffView(diff) if diff is not None else None
+    )
 
 
 
@@ -154,24 +155,26 @@ def autocomplete_tags(session, id: str, placeholder: str, search: str, eventType
     tags = rTable.active_tags
     runID = session.get("datagrid", {}).get("selected-rows", [""])[-1]
     if eventType =="keyup" and eventKey == "Enter":
+        from ..datagrid import DataGrid
         runsocket = rTable.load_run(runID)
         runsocket.set_tag(search)
-        return AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
+        return DataGrid(session, swap=True, wrapincontainer=True), AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
 
     match eventType:
         case "clicked":
+            from ..datagrid import DataGrid
             runsocket = rTable.load_run(runID)
             runsocket.set_tag(search)
-            return AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
+            return DataGrid(session), AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
         case "keyup" | "focus":
             suggestions = [tag for tag in tags if search.lower() in tag.lower()]
-            return AutoCompleteInput(id, suggestions=suggestions, placeholder=placeholder, return_suggestions=True)
+            return AutoCompleteInput(id, suggestions=suggestions, placeholder=placeholder, return_suggestions=True, oob=True)
         case "blur":
             tag = rTable.load_run(runID).tag
             return AutoCompleteInput(id, suggestions=[], value=tag, placeholder=placeholder, oob=True)
         case _:
             suggestions = [tag for tag in tags if search.lower() in tag.lower()]
-            return AutoCompleteInput(id, suggestions=suggestions, placeholder=placeholder, return_suggestions=True)
+            return AutoCompleteInput(id, suggestions=suggestions, placeholder=placeholder, return_suggestions=True, oob=True)
 
 def change_color(session, id: str):
     from __main__ import rTable, CONFIG

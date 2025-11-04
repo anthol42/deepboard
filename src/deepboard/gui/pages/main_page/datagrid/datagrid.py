@@ -17,7 +17,7 @@ def apply_filters(data: List[List[Any]], colors: List[str], col_ids: list[str], 
 
     return data, colors
 
-def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, fullscreen: bool = False):
+def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, fullscreen: bool = False, swap: bool = False):
     """
     Note that fullscreen only work if the container is requested because it applies on the container
     """
@@ -85,6 +85,7 @@ def DataGrid(session, rename_col: str = None, wrapincontainer: bool = False, ful
                 table,
                 cls="scroll-container" if not fullscreen else "scroll-container fullscreen",
                 id="experiment-table",
+                hx_swap_oob="true" if swap else "false",
             ),
     else:
         return table

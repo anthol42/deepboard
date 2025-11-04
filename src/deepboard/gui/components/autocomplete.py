@@ -9,11 +9,14 @@ def AutoCompleteInput(id: str, suggestions: List[str] = None, placeholder: str =
             Div(suggestion,
                 hx_get=f"/autocomplete/tags?id={id}&placeholder={placeholder}&eventType=clicked&search={suggestion}",
                 hx_trigger="mousedown",
+                hx_target="#experiment-table",
                 cls='autocomplete-suggestion-item')
         for suggestion in suggestions
         ],
             cls="autocomplete-suggestions" + (' hidden' if len(suggestions) == 0 else ''),
-            id=f'{id}-suggestions'),
+            id=f'{id}-suggestions',
+            hx_swap_oob="true" if oob and return_suggestions else None,
+            ),
     if return_suggestions:
         return suggestion_component
     else:
@@ -31,8 +34,6 @@ def AutoCompleteInput(id: str, suggestions: List[str] = None, placeholder: str =
                     eventType: event.type,
                     eventKey: event.key
                   }}''',
-                  hx_target=f'#{id}-suggestions',
-                  hx_swap="outerHTML",
                   onkeydown=f"if(event.key === 'Enter') setTimeout(() => {{document.getElementById('{f'{id}-search'}').blur();}}, 100);",
                   cls="autocomplete-input"),
             suggestion_component,
