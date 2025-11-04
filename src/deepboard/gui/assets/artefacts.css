@@ -125,3 +125,53 @@ This css file contains classes for all artefacts tabs:
 .stat-cell{
     font-size: var(--small-text);
 }
+
+.artefact-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2em;
+    margin-bottom: 1em;
+}
+
+.artefact-header-button{
+    /*position: relative;*/
+    padding: 1em 1.25em;
+    border-radius: var(--sp-radius);
+    background-color: var(--sp-tab-bg);
+    box-sizing: border-box;
+    border: none;
+    cursor: pointer;
+    color: var(--text_color);
+    box-shadow: var(--sp-button-shadow);
+}
+.artefact-header-button:hover{
+    box-shadow: var(--sp-button-shadow-hover);
+    background-color: var(--sp-tab-bg-hover);
+}
+
+.artefact-header-button.filter{
+    color: var(--sp-color);
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+.artefact-header-button.filter:hover{
+    color: var(--failure-color);
+}
+.artefact-filter-options {
+    position: absolute;
+    top: -1em;
+    left: 100%;
+    border-radius: var(--sp-radius);
+    padding: 0;
+    list-style: none;
+    min-width: 150px;
+    z-index: 1001;
+    margin-left: 0;
+    text-align: left;
+    background-color: var(--sp-tab-bg);
+    overflow: hidden;
+    box-shadow: var(--sp-button-shadow);
+}

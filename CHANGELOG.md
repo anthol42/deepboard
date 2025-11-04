@@ -13,6 +13,8 @@ data.
 - Now can add a tag to runs, for easier filtering and organization.
 - Now can color run rows
 - Criteria to define a unique experiment are now configurable at table creation.
+- Improved the UI for artefacts (figures / images / fragments, etc)
+- Now can tag artefacts, and filter by tags, epochs and repetitions in the GUI
 
 
 ### Fixed bugs

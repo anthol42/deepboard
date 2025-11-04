@@ -1,7 +1,19 @@
 from fasthtml.common import *
 from starlette.responses import Response
 from typing import *
-from deepboard.gui.components import Modal, SplitSelector, StatLine, ArtefactGroup, StatCell
+from deepboard.gui.components import Modal, SplitSelector, StatLine, ArtefactGroup, StatCell, ArtefactHeader
+
+def _is_allowed(fragment: dict, filters: Optional[dict[str, List[str]]]) -> bool:
+    if filters is None:
+        return True
+
+    for key, unallowed_values in filters.items():
+        if key not in fragment:
+            raise ValueError(f"Invalid filter key: {key}! Available keys are 'tag', 'epoch', 'run_rep'.")
+
+        if str(fragment[key]) in unallowed_values:
+            return False
+    return True
 
 class ImagesStats(NamedTuple):
     steps: List[int]
@@ -256,6 +268,7 @@ def ImageCard(tag: str, step: int, epoch: Optional[int], run_rep: int, images):
 
 def ImageTab(session, runID, type: Literal["IMAGE", "PLOT"], swap: bool = False):
     from __main__ import rTable
+    filters = session.get("artefact-filters", {}).get(type, {})
     socket = rTable.load_run(runID)
 
     images, stats = _get_images(socket, type=type)
@@ -268,12 +281,15 @@ def ImageTab(session, runID, type: Literal["IMAGE", "PLOT"], swap: bool = False)
 
     grouped = {}
     for image in images:
+        if not _is_allowed(image, filters):
+            continue
         idx = (image["tag"], image["step"], image["epoch"], image["run_rep"])
         if idx not in grouped:
             grouped[idx] = []
         grouped[idx].append(image["id"])
 
     return Div(
+        ArtefactHeader(session, type=type),
         *[
             ImageCard(
                 tag,

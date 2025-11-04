@@ -1,7 +1,19 @@
 from fasthtml.common import *
 from starlette.responses import Response
 from typing import *
-from deepboard.gui.components import SplitSelector, StatLine, ArtefactGroup, StatCell
+from deepboard.gui.components import SplitSelector, StatLine, ArtefactGroup, StatCell, ArtefactHeader
+
+def _is_allowed(fragment: dict, filters: Optional[dict[str, List[str]]]) -> bool:
+    if filters is None:
+        return True
+
+    for key, unallowed_values in filters.items():
+        if key not in fragment:
+            raise ValueError(f"Invalid filter key: {key}! Available keys are 'tag', 'epoch', 'run_rep'.")
+
+        if str(fragment[key]) in unallowed_values:
+            return False
+    return True
 
 class FragmentsStats(NamedTuple):
     steps: List[int]
@@ -58,6 +70,7 @@ def FragmentCard(tag: str, step: int, epoch: Optional[int], run_rep: int, fragme
 
 def FragmentTab(session, runID, type: Literal["RAW", "HTML"], swap: bool = False):
     from __main__ import rTable
+    filters = session.get("artefact-filters", {}).get(type, {})
     socket = rTable.load_run(runID)
 
     fragments, stats = _get_fragments(socket, type=type)
@@ -70,6 +83,8 @@ def FragmentTab(session, runID, type: Literal["RAW", "HTML"], swap: bool = False
 
     grouped = {}
     for fragment in fragments:
+        if not _is_allowed(fragment, filters):
+            continue
         idx = (fragment["tag"], fragment["step"], fragment["epoch"], fragment["run_rep"])
         if idx not in grouped:
             grouped[idx] = []
@@ -77,6 +92,7 @@ def FragmentTab(session, runID, type: Literal["RAW", "HTML"], swap: bool = False
 
 
     return Div(
+        ArtefactHeader(session, type=type),
         *[
             FragmentCard(
                 tag,
@@ -105,7 +121,3 @@ def fragment_enable(runID, type: Literal["RAW", "HTML"]):
         return len(socket.read_text()) > 0
     else:
         return len(socket.read_fragment()) > 0
-
-# routes
-def build_fragment_routes(rt):
-    pass

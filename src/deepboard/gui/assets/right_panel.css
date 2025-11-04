@@ -83,6 +83,7 @@ margin: 0;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  box-sizing: border-box; /* Add this */
 }
 
 .right-panel-content{

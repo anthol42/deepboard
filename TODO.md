@@ -5,6 +5,8 @@ Bugs:
 - [X] When value is 0.00005, it is rounded to 0.0001 in GUI. Fix this
 - [X] Close cursor as soon as possible to avoid 'database is locked' errors
 - [X] It prints the fragment when returned in the GUI
+- [ ] When multiple tab in the side panel, when clicking a tab, the horizontal scroll is reset, which shouldn't happen. The scroll position should be maintained.
+- [ ] Fix bug when coloring rows with a filter. (Does not color the good row)
 
 Next version
 - [X] Add a major version number in the database to avoid running a database with a wrong version
@@ -21,7 +23,7 @@ Next version
 - [X] Add possibility to color run rows
 - [X] Unique columns combination are to be configured at table creation
 - [X] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step,  rep and tag as the footer of the card (small text)
-- [ ] For figures / images / fragments, add a filter option by epochs, reps and tags
+- [X] For figures / images / fragments, add a filter option by epochs, reps and tags
 - [ ] Improve the image viewer with zooming and panning
 - [ ] Add a way to save models (Save artefacts)
 - [ ] Standardize the api (set/update) (get/computed property): One expensive to fetch while the other inexpensive
