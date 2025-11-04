@@ -27,7 +27,7 @@ def CompareSetup(session, swap: bool = False):
     raw_labels = sorted(raw_labels)
     sockets = [rTable.load_run(runID) for runID in raw_labels]
     repetitions = [socket.get_repetitions() for socket in sockets]
-    names = [getName(rTable.fetch_experiment(runID)) for runID in raw_labels]
+    names = [getName(rTable.get_experiment_raw(runID)) for runID in raw_labels]
     if any(len(rep) > 1 for rep in repetitions):
         labels = [(f"{label}.{rep} — {name}" if name is not None else f"{label}.{rep}", CONFIG.COLORS[i % len(CONFIG.COLORS)], f"{label}.{rep}" in hidden_lines) for i, (label, name) in enumerate(zip(raw_labels, names)) for rep in sockets[i].get_repetitions()]
     else:

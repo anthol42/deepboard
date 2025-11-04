@@ -25,8 +25,8 @@ Next version
 - [X] Improve the UI for figures / images / fragments to wrapt them in a card per reported step, with the epoch, step,  rep and tag as the footer of the card (small text)
 - [X] For figures / images / fragments, add a filter option by epochs, reps and tags
 - [X] Improve the image viewer with zooming and panning
-- [ ] Add a way to save models (Save artefacts)
-- [ ] Standardize the api (set/update) (get/computed property): One expensive to fetch while the other inexpensive
+- [ ] Add a way to save models (Save artefacts) --> Aborted, do not know how to do it properly yet
+- [X] Standardize the api (set/update) (get/computed property): One expensive to fetch while the other inexpensive
 - [X] Add a way to download graph data as csv
 
 Next next version

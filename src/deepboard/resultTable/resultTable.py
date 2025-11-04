@@ -250,7 +250,7 @@ class ResultTable:
         return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable,
                          auto_log_plt=auto_log_plt)
 
-    def load_config(self, run_id: int) -> str:
+    def get_config(self, run_id: int) -> str:
         """
         Load the configuration file of a given run id
         :param run_id: The run id
@@ -303,7 +303,7 @@ class ResultTable:
             runs = cursor.fetchall()
             return [r[0] for r in runs]
 
-    def fetch_experiment(self, run_id: int) -> Dict[str, Any]:
+    def get_experiment_raw(self, run_id: int) -> Dict[str, Any]:
         """
         Load the row of an experiment. It will return a dictionary with the keys being the column names and the values
         the actual values. Note that this does not perform any other operations than fetch in the database. This means

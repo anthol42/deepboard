@@ -80,7 +80,7 @@ def DiffView(diff: Optional[str]):
 def InfoView(runID: int):
     from __main__ import rTable
     # Cli
-    row = rTable.fetch_experiment(runID)
+    row = rTable.get_experiment_raw(runID)
     # RunID, Exp name, cfg, cfg hash, cli, command, comment, start, status, commit, diff
     start: datetime = datetime.fromisoformat(row['start'])
     status = row["status"]
@@ -141,7 +141,7 @@ def build_info_routes(rt):
 def update_note(session, runID: int, note: str):
     from __main__ import rTable
     socket = rTable.load_run(runID)
-    socket.update_note(note)
+    socket.set_note(note)
 
 def change_status(session, runID: int, run_status: str):
     from __main__ import rTable
@@ -155,13 +155,13 @@ def autocomplete_tags(session, id: str, placeholder: str, search: str, eventType
     runID = session.get("datagrid", {}).get("selected-rows", [""])[-1]
     if eventType =="keyup" and eventKey == "Enter":
         runsocket = rTable.load_run(runID)
-        runsocket.update_tag(search)
+        runsocket.set_tag(search)
         return AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
 
     match eventType:
         case "clicked":
             runsocket = rTable.load_run(runID)
-            runsocket.update_tag(search)
+            runsocket.set_tag(search)
             return AutoCompleteInput(id, suggestions=[], value=search, placeholder=placeholder, oob=True)
         case "keyup" | "focus":
             suggestions = [tag for tag in tags if search.lower() in tag.lower()]

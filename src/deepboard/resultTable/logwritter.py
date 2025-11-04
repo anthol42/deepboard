@@ -124,7 +124,7 @@ class LogWriter:
         if flush:
             self._flush_all()
 
-    def read_scalar(self, tag) -> List[Scalar]:
+    def get_scalar(self, tag) -> List[Scalar]:
         """
         Read a scalar from the resultTable with the given tag
         :param tag: The tag to read formatted as: 'split/name' or simply 'split'.
@@ -172,7 +172,7 @@ class LogWriter:
         if flush:
             self._flush_all()
 
-    def read_images(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None,
+    def get_images(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None,
                     repetition: Optional[int] = None) -> List[dict]:
         """
         Return all images logged in the run with the given step, tag and/or epoch.
@@ -221,6 +221,19 @@ class LogWriter:
         if flush:
             self._flush_all()
 
+    def get_figures(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None,
+                    repetition: Optional[int] = None):
+        """
+        Return all figures logged in the run with the given step, tag and/or epoch.
+        :param id: The id of the figure to read. If None, all figures are returned.
+        :param step: The step at which the figure was generated. If None, all figures are returned.
+        :param tag: The tag describing the figures. If None, all tags are returned.
+        :param epoch: The epoch at which the figures were generated. If None, all epochs are returned.
+        :param repetition: The repetition of the figures. If None, all figures are returned.
+        :return:
+        """
+        return self._get_images(id, step, tag, epoch, repetition, img_type="PLOT")
+
     def add_text(self, text: str, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, flush: bool = False):
         """
@@ -242,7 +255,7 @@ class LogWriter:
         if flush:
             self._flush_all()
 
-    def read_text(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None,
+    def get_text(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, repetition: Optional[int] = None):
         """
         Return all text samples logged in the run with the given id, step, tag and/or epoch.
@@ -276,7 +289,7 @@ class LogWriter:
         if flush:
             self._flush_all()
 
-    def read_fragment(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None,
+    def get_fragment(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None,
                   epoch: Optional[int] = None, repetition: Optional[int] = None):
         """
         Return all html fragments logged in the run with the given id, step, tag and/or epoch.
@@ -288,19 +301,6 @@ class LogWriter:
         :return: A list of html fragment
         """
         return self._get_fragments(id, step, tag, epoch, repetition, fragment_type="HTML")
-
-    def read_figures(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None,
-                    repetition: Optional[int] = None):
-        """
-        Return all figures logged in the run with the given step, tag and/or epoch.
-        :param id: The id of the figure to read. If None, all figures are returned.
-        :param step: The step at which the figure was generated. If None, all figures are returned.
-        :param tag: The tag describing the figures. If None, all tags are returned.
-        :param epoch: The epoch at which the figures were generated. If None, all epochs are returned.
-        :param repetition: The repetition of the figures. If None, all figures are returned.
-        :return:
-        """
-        return self._get_images(id, step, tag, epoch, repetition, img_type="PLOT")
 
     def add_hparams(self, **kwargs):
         """
@@ -378,7 +378,7 @@ class LogWriter:
         with self._cursor as cursor:
             cursor.execute("UPDATE Experiments SET status=? WHERE run_id=?", (status, self.run_id))
 
-    def update_note(self, note: str):
+    def set_note(self, note: str):
         """
         Update the note of the run
         :param note: The note to set (will overwrite the previous one)
@@ -390,7 +390,7 @@ class LogWriter:
         with self._cursor as cursor:
             cursor.execute("UPDATE Experiments SET note=? WHERE run_id=?", (note, self.run_id))
 
-    def update_tag(self, tag: str):
+    def set_tag(self, tag: str):
         """
         Update the tag of the run
         :param tag: The tag to set (will overwrite the previous one)
@@ -488,7 +488,7 @@ class LogWriter:
         """
         Get the scalar values for a given tag.
         """
-        return self.read_scalar(tag)
+        return self.get_scalar(tag)
 
     def _run_pre_hooks(self):
         for hook in self.pre_hooks:

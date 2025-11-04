@@ -23,10 +23,10 @@ def ConfigView(runID: int):
     from __main__ import rTable
 
     # Config
-    cfg_text = rTable.load_config(runID)
+    cfg_text = rTable.get_config(runID)
 
     # Cli
-    row = rTable.fetch_experiment(runID)
+    row = rTable.get_experiment_raw(runID)
     command_line = row["command"]
     if row['cli'] == "":
         lines = []

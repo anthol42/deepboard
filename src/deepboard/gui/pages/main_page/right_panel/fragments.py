@@ -23,9 +23,9 @@ class FragmentsStats(NamedTuple):
 
 def _get_fragments(socket, type: Literal["RAW", "HTML"]):
     if type == "RAW":
-        fragments = socket.read_text()
+        fragments = socket.get_text()
     else:
-        fragments = socket.read_fragment()
+        fragments = socket.get_fragment()
 
     steps = list({fragment["step"] for fragment in fragments})
     epochs = list({fragment["epoch"] for fragment in fragments})
@@ -118,6 +118,6 @@ def fragment_enable(runID, type: Literal["RAW", "HTML"]):
     from __main__ import rTable
     socket = rTable.load_run(runID)
     if type == "RAW":
-        return len(socket.read_text()) > 0
+        return len(socket.get_text()) > 0
     else:
-        return len(socket.read_fragment()) > 0
+        return len(socket.get_fragment()) > 0

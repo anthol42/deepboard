@@ -23,9 +23,9 @@ class ImagesStats(NamedTuple):
 
 def _get_images(socket, type: Literal["IMAGE", "PLOT"]):
     if type == "IMAGE":
-        images = socket.read_images()
+        images = socket.get_images()
     else:
-        images = socket.read_figures()
+        images = socket.get_figures()
 
     steps = list({img["step"] for img in images})
     epochs = list({img["epoch"] for img in images})
@@ -150,9 +150,9 @@ def images_enable(runID, type: Literal["IMAGES", "PLOT"]):
     from __main__ import rTable
     socket = rTable.load_run(runID)
     if type == "IMAGES":
-        return len(socket.read_images()) > 0
+        return len(socket.get_images()) > 0
     else:
-        return len(socket.read_figures()) > 0
+        return len(socket.get_figures()) > 0
 
 # routes
 def build_images_routes(rt):

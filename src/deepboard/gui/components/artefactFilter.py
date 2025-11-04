@@ -15,13 +15,13 @@ def hash_id(text):
 def get_values(socket, type: Literal["RAW", "HTML", "IMAGE", "PLOT"]):
     match type:
         case "RAW":
-            fragments = socket.read_text()
+            fragments = socket.get_text()
         case "HTML":
-            fragments = socket.read_fragment()
+            fragments = socket.get_fragment()
         case "IMAGE":
-            fragments = socket.read_images()
+            fragments = socket.get_images()
         case "PLOT":
-            fragments = socket.read_figures()
+            fragments = socket.get_figures()
         case _:
             raise ValueError(f"Unsupported fragment type: {type}")
 

@@ -38,7 +38,7 @@ def prepare_db():
     sqlite3.register_converter("datetime", _convert_datetime)
 
 def make_df(socket, tag: Tuple[str, str]) -> Tuple[pd.DataFrame, List[int], List[int]]:
-    scalars = socket.read_scalar("/".join(tag))
+    scalars = socket.get_scalar("/".join(tag))
     steps = [scalar.step for scalar in scalars]
     value = [scalar.value for scalar in scalars]
     repetition = [scalar.run_rep for scalar in scalars]
