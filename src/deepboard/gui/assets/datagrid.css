@@ -3,6 +3,7 @@
   width: 100%;
   border-collapse: collapse;
   border-radius: 8px;
+  overflow: auto;
 }
 
 .data-grid td {
@@ -110,6 +111,9 @@
 }
 
 .table-row-hidden{
+  color: var(--dg-disabled-color);
+}
+.table-row-hidden > td {
   color: var(--dg-disabled-color);
 }
 .data-grid tbody tr:hover{
