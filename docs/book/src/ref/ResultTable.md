@@ -19,10 +19,23 @@ debug runs. This run will be overwritten by the next debug run.
 
 - Finally, you can interact with the table with the different available methods.
 
-## Method: `fetch_experiment()`
+## Method: `get_config()`
 
 ```python
-fetch_experiment(self, run_id: int) -> Dict[str, Any]
+get_config(self, run_id: int) -> str
+```
+
+**Description:** Load the configuration file of a given run id
+
+**Parameters:**
+- `run_id`: The run id
+
+**Return:**
+- The path to the configuration file
+## Method: `get_experiment_raw()`
+
+```python
+get_experiment_raw(self, run_id: int) -> Dict[str, Any]
 ```
 
 **Description:** Load the row of an experiment. It will return a dictionary with the keys being the column names and the values
@@ -68,7 +81,7 @@ get_image_by_id(self, image_id: int) -> Optional[PIL.Image.Image]
 ## Method: `get_results()`
 
 ```python
-get_results(self, run_id: Optional[int] = None, show_hidden: bool = False) -> Tuple[List[str], List[str], List[List[Any]]]
+get_results(self, run_id: Optional[int] = None, show_hidden: bool = False) -> deepboard.resultTable.resultTable.TableTuple
 ```
 
 **Description:** This function will build the result table and return it as a list. It will also return the column names and
@@ -81,7 +94,7 @@ You can also get a single row by passing a run_id to the method.
 - `show_hidden`: Show hidden runs.
 
 **Return:**
-- A list of columns names, a list of column ids and a list of rows
+- A list of columns names, a list of column ids, a list of whether they are hparam or not, and a list of rows
 ## Method: `hide_column()`
 
 ```python
@@ -105,19 +118,6 @@ the result Table, however, it can be unhidden if it was a mistake.
 **Parameters:**
 - `run_id`: The run id to hide
 
-## Method: `load_config()`
-
-```python
-load_config(self, run_id: int) -> str
-```
-
-**Description:** Load the configuration file of a given run id
-
-**Parameters:**
-- `run_id`: The run id
-
-**Return:**
-- The path to the configuration file
 ## Method: `load_run()`
 
 ```python
@@ -134,7 +134,7 @@ load_run(self, run_id) -> deepboard.resultTable.logwritter.LogWriter
 ## Method: `new_debug_run()`
 
 ```python
-new_debug_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath], cli: dict, comment: Optional[str] = None, flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
+new_debug_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath, NoneType] = None, cli: Optional[dict] = None, comment: Optional[str] = None, tag: str = '', flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
 ```
 
 **Description:** Create a new DEBUG socket to log the results. The results will be entered in the result table, but as the runID -1.
@@ -149,6 +149,7 @@ Note:
 - `config_path`: The path to the configuration path
 - `cli`: The cli arguments
 - `comment`: The comment, if any
+- `tag`: The tag of the run
 - `flush_each`: Every how many logs does the logger save them to the database?
 - `keep_each`: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
 - `auto_log_plt`: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.
@@ -159,7 +160,7 @@ Note:
 ## Method: `new_run()`
 
 ```python
-new_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath], cli: dict, comment: Optional[str] = None, flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
+new_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath, NoneType] = None, cli: Optional[dict] = None, comment: Optional[str] = None, tag: str = '', flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
 ```
 
 **Description:** Create a new logwritter object bound to a run entry in the table. Think of it as a socket.
@@ -169,6 +170,7 @@ new_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PureP
 - `config_path`: The path to the configuration path
 - `cli`: The cli arguments
 - `comment`: The comment, if any
+- `tag`: The tag of the run
 - `flush_each`: Every how many logs does the logger save them to the database?
 - `keep_each`: If the training has a lot of steps, it might be preferable to not log every step to save space and speed up the process. This parameter controls every how many step we store the log. 1 means we save at every steps. 10 would mean that we drop 9 steps to save 1.
 - `auto_log_plt`: If True, automatically detect if matplotlib figures were generated and log them. Note that it checks only when a method on the socket is called. It is better to log them manually because you can set the appropriate step, epoch and split.

@@ -3,6 +3,9 @@ import os
 from pathlib import Path
 import re
 from enum import Enum
+import sys
+
+sys.path.append(str(Path("src").resolve()))
 
 # Specify class and function names to include
 whitelist = [
@@ -57,15 +60,17 @@ def extract_returns_and_clean_docstring(docstring):
 
 def extract_docstrings(package_path):
     # Create a markdown file to store the results
-    markdown_path = Path("docs/resultTable")
+    markdown_path = Path("docs/book/src/ref")
     if not os.path.exists(markdown_path):
         os.makedirs(markdown_path, exist_ok=True)
 
     # Walk through the package directory
-    for root, dirs, files in os.walk(package_path):
+    for root, dirs, files in os.walk('src/' + package_path):
+        root = root.strip('src/')
         for file in files:
             if file.endswith(".py"):
                 file_path = os.path.join(root, file)
+                print(root)
                 module_name = file_path.replace('.py', '').replace('/', '.')
 
                 # Import the module dynamically

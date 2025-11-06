@@ -1,3 +1,5 @@
+$(info [make] Current directory: $(CURDIR))
 build:
-	python scripts/prep_readme.py
+	uv run tools/extract_doc.py
+	uv run tools/prep_readme.py
 	uv build

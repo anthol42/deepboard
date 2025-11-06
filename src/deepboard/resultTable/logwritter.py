@@ -29,7 +29,7 @@ class LogWriter:
         datapoint every two times the add_scalar method is called will be stored.
         :param disable: If True, the logger is disabled and will not log anything in the database.
         :param auto_log_plt: If True, automatically detect if matplotlib figures were generated and log them. Note that
-        it checks only when a method on the socket is called.
+        it checks only when a method on the LogWriter is called.
         """
         if keep_each <= 0:
             raise ValueError("Parameter keep_each must be grater than 0: {1, 2, 3, ...}")

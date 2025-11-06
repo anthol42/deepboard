@@ -1,0 +1,11 @@
+[book]
+authors = ["Anthony Lavertu"]
+language = "en"
+src = "src"
+title = "The Deepboard Book"
+
+[output.html]
+additional-js = ["theme/download-markdown.js"]
+
+[preprocessor.md_button]
+command = "python md_button.py"

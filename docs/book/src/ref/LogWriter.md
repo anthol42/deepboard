@@ -9,7 +9,7 @@ You should not instantiate this class directly, but use the ResultTable class to
 ## Method: `add_fragment()`
 
 ```python
-add_fragment(self, content: str, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
+add_fragment(self, content: str, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
 ```
 
 **Description:** Add a html fragment to the resultTable
@@ -20,7 +20,7 @@ scalar steps.
 **Parameters:**
 - `content`: Must be a string containing valid HTML content.
 - `step`: The global step at which the image was generated. If None, the maximum step is taken from all global
-- `split`: The split in which the image was generated.
+- `tag`: A tag describing the fragment.
 - `epoch`: The epoch at which the image was generated. If None, no epoch is saved.
 - `flush`: If True, flush all data in memory to the database.
 
@@ -38,7 +38,7 @@ add_hparams(self, **kwargs)
 ## Method: `add_image()`
 
 ```python
-add_image(self, image: Union[bytes, PIL.Image.Image], step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
+add_image(self, image: Union[bytes, PIL.Image.Image], step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
 ```
 
 **Description:** Add an image to the resultTable
@@ -49,7 +49,7 @@ steps.
 **Parameters:**
 - `image`: Must be png bytes or a PIL Image object.
 - `step`: The global step at which the image was generated. If None, the maximum step is taken from all global
-- `split`: The split in which the image was generated.
+- `tag`: A tag describing the image.
 - `epoch`: The epoch at which the image was generated. If None, no epoch is saved.
 - `flush`: If True, flush all data in memory to the database.
 
@@ -72,7 +72,7 @@ add_scalar(self, tag: str, scalar_value: Union[float, int], step: Optional[int] 
 ## Method: `add_text()`
 
 ```python
-add_text(self, text: str, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
+add_text(self, text: str, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
 ```
 
 **Description:** Add a text sample to the resultTable
@@ -83,14 +83,14 @@ scalar steps.
 **Parameters:**
 - `text`: Must be a string
 - `step`: The global step at which the image was generated. If None, the maximum step is taken from all global
-- `split`: The split in which the image was generated.
+- `tag`: A tag describing the text.
 - `epoch`: The epoch at which the image was generated. If None, no epoch is saved.
 - `flush`: If True, flush all data in memory to the database.
 
 ## Method: `detect_and_log_figures()`
 
 ```python
-detect_and_log_figures(self, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
+detect_and_log_figures(self, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
 ```
 
 **Description:** Detect matplotlib figures that are currently open and log them to the result table. (Save them as png).
@@ -99,10 +99,42 @@ steps.
 
 **Parameters:**
 - `step`: The global step at which the image was generated. If None, the maximum step is taken from all global
-- `split`: The split in which the images were generated.
+- `tag`: A tag describing the figures.
 - `epoch`: The epoch at which the images were generated. If None, no epoch is saved.
 - `flush`: If True, flush all data in memory to the database.
 
+## Method: `get_figures()`
+
+```python
+get_figures(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None)
+```
+
+**Description:** Return all figures logged in the run with the given step, tag and/or epoch.
+
+**Parameters:**
+- `id`: The id of the figure to read. If None, all figures are returned.
+- `step`: The step at which the figure was generated. If None, all figures are returned.
+- `tag`: The tag describing the figures. If None, all tags are returned.
+- `epoch`: The epoch at which the figures were generated. If None, all epochs are returned.
+- `repetition`: The repetition of the figures. If None, all figures are returned.
+
+## Method: `get_fragment()`
+
+```python
+get_fragment(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None)
+```
+
+**Description:** Return all html fragments logged in the run with the given id, step, tag and/or epoch.
+
+**Parameters:**
+- `id`: The id of the html fragment to read
+- `step`: The step at which the html fragment was generated. If None, all html fragment are returned.
+- `tag`: The tag describing the fragment. If None, all tags are returned.
+- `epoch`: The epoch at which the html fragments were generated. If None, all epochs are returned.
+- `repetition`: The repetition of the run. If None, all html fragment are returned.
+
+**Return:**
+- A list of html fragment
 ## Method: `get_hparams()`
 
 ```python
@@ -113,6 +145,23 @@ get_hparams(self) -> Dict[str, Any]
 
 **Return:**
 - A dict of hyperparameters
+## Method: `get_images()`
+
+```python
+get_images(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None) -> List[dict]
+```
+
+**Description:** Return all images logged in the run with the given step, tag and/or epoch.
+
+**Parameters:**
+- `id`: The id of the image to read
+- `step`: The step at which the image was generated. If None, all images are returned.
+- `tag`: The tag in which the images were generated. If None, all tags are returned.
+- `epoch`: The epoch at which the images were generated. If None, all epochs are returned.
+- `repetition`: The repetition of the images. If None, all images are returned.
+
+**Return:**
+- A list of image bytes
 ## Method: `get_repetitions()`
 
 ```python
@@ -123,6 +172,36 @@ get_repetitions(self) -> List[int]
 
 **Return:**
 - A list of repetitions ids
+## Method: `get_scalar()`
+
+```python
+get_scalar(self, tag) -> List[deepboard.resultTable.scalar.Scalar]
+```
+
+**Description:** Read a scalar from the resultTable with the given tag
+
+**Parameters:**
+- `tag`: The tag to read formatted as: 'split/name' or simply 'split'.
+
+**Return:**
+- A list of Scalars items
+## Method: `get_text()`
+
+```python
+get_text(self, id: Optional[int] = None, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None)
+```
+
+**Description:** Return all text samples logged in the run with the given id, step, tag and/or epoch.
+
+**Parameters:**
+- `id`: The id of the text sample to read
+- `step`: The step at which the text was generated. If None, all text samples are returned.
+- `tag`: The tag describing the text. If None, all tags are returned.
+- `epoch`: The epoch at which the texts were generated. If None, all epochs are returned.
+- `repetition`: The repetition of the run. If None, all text samples are returned.
+
+**Return:**
+- A list of text samples
 ## Method: `new_repetition()`
 
 ```python
@@ -133,85 +212,28 @@ new_repetition(self)
 run. This is a mutating method, meaning that you can call it at the end of the training loop before the next
 full training loop is run again.
 
-## Method: `read_figures()`
+## Method: `set_color()`
 
 ```python
-read_figures(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None)
+set_color(self, color: Optional[str] = None)
 ```
 
-**Description:** Return all figures logged in the run with the given step, split and/or epoch.
+**Description:** Set the color of the run
 
 **Parameters:**
-- `id`: The id of the figure to read. If None, all figures are returned.
-- `step`: The step at which the figure was generated. If None, all figures are returned.
-- `split`: The split in which the figures were generated. If None, all splits are returned.
-- `epoch`: The epoch at which the figures were generated. If None, all epochs are returned.
-- `repetition`: The repetition of the figures. If None, all figures are returned.
+- `color`: The color to set (hex format without #, e.g. 'ff0000' for red)
 
-## Method: `read_fragment()`
+## Method: `set_note()`
 
 ```python
-read_fragment(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None)
+set_note(self, note: str)
 ```
 
-**Description:** Return all html fragments logged in the run with the given id, step, split and/or epoch.
+**Description:** Update the note of the run
 
 **Parameters:**
-- `id`: The id of the html fragment to read
-- `step`: The step at which the html fragment was generated. If None, all html fragment are returned.
-- `split`: The split in which the html fragments were generated. If None, all splits are returned.
-- `epoch`: The epoch at which the html fragments were generated. If None, all epochs are returned.
-- `repetition`: The repetition of the run. If None, all html fragment are returned.
+- `note`: The note to set (will overwrite the previous one)
 
-**Return:**
-- A list of html fragment
-## Method: `read_images()`
-
-```python
-read_images(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None) -> List[dict]
-```
-
-**Description:** Return all images logged in the run with the given step, split and/or epoch.
-
-**Parameters:**
-- `id`: The id of the image to read
-- `step`: The step at which the image was generated. If None, all images are returned.
-- `split`: The split in which the images were generated. If None, all splits are returned.
-- `epoch`: The epoch at which the images were generated. If None, all epochs are returned.
-- `repetition`: The repetition of the images. If None, all images are returned.
-
-**Return:**
-- A list of image bytes
-## Method: `read_scalar()`
-
-```python
-read_scalar(self, tag) -> List[deepboard.resultTable.scalar.Scalar]
-```
-
-**Description:** Read a scalar from the resultTable with the given tag
-
-**Parameters:**
-- `tag`: The tag to read formatted as: 'split/name' or simply 'split'.
-
-**Return:**
-- A list of Scalars items
-## Method: `read_text()`
-
-```python
-read_text(self, id: Optional[int] = None, step: Optional[int] = None, split: Optional[str] = None, epoch: Optional[int] = None, repetition: Optional[int] = None)
-```
-
-**Description:** Return all text samples logged in the run with the given id, step, split and/or epoch.
-
-**Parameters:**
-- `id`: The id of the text sample to read
-- `step`: The step at which the text was generated. If None, all text samples are returned.
-- `split`: The split in which the texts were generated. If None, all splits are returned.
-- `epoch`: The epoch at which the texts were generated. If None, all epochs are returned.
-- `repetition`: The repetition of the run. If None, all text samples are returned.
-
-**Return:**
-- A list of text samples
 ## Method: `set_status()`
 
 ```python
@@ -222,6 +244,17 @@ set_status(self, status: Literal['running', 'finished', 'failed'])
 
 **Parameters:**
 - `status`: The status to set
+
+## Method: `set_tag()`
+
+```python
+set_tag(self, tag: str)
+```
+
+**Description:** Update the tag of the run
+
+**Parameters:**
+- `tag`: The tag to set (will overwrite the previous one)
 
 ## Method: `write_result()`
 

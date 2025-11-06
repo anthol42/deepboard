@@ -60,8 +60,8 @@ class ResultTable:
 
     - Finally, you can interact with the table with the different available methods.
     """
-    DEFAULT_UNIQUE_COLS = ("experiment", "config", "config_hash", "cli", "comment")
-    def __init__(self, db_path: str = "results/result_table.db", nocommit_action: NoCommitAction = NoCommitAction.WARN,
+    DEFAULT_UNIQUE_COLS = ("experiment", "config", "config_hash", "cli", "comment", "tag")
+    def __init__(self, db_path: str = "result_table.db", nocommit_action: NoCommitAction = NoCommitAction.WARN,
                  unique_columns: Optional[Tuple[str]] = None):
         """
         :param db_path: The path to the databse file
