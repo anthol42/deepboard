@@ -302,9 +302,10 @@ class LogWriter:
         """
         return self._get_fragments(id, step, tag, epoch, repetition, fragment_type="HTML")
 
-    def add_hparams(self, **kwargs):
+    def add_hparams(self, param_dict: Optional[dict[str, Any]] = None, **kwargs):
         """
         Add hyperparameters to the result table
+        :param param_dict: The hyperparameters to add as a dict.
         :param kwargs: The hyperparameters to save
         :return: None
         """
@@ -312,6 +313,8 @@ class LogWriter:
         # Prepare the data to save
         if self.disable:
             return
+        if param_dict is not None:
+            kwargs.update(param_dict)
 
         query = "INSERT INTO Results (run_id, metric, value, is_hparam) VALUES (?, ?, ?, ?)"
         data = [(self.run_id, key, value, True) for key, value in kwargs.items()]

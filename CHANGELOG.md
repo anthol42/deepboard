@@ -1,5 +1,6 @@
 ## 0.3.0
 ### New features
+- Now can log hyperparameters from a dictionary
 - Now deepboard automatically checks if the resultTable is compatible with the deepboard version to avoid corrupting 
 data.
 - Commande line arguments (CLI) and the configuration file path are now optional when creating a new run.
