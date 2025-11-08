@@ -137,3 +137,6 @@ To launch deepboard Web UI, simply run the command `deepboard` in your terminal 
 ```shell
 deepboard /path/to/resultTable.db
 ```
+
+## Documentation
+Read the book here: [https://anthol42.github.io/deepboard/](https://anthol42.github.io/deepboard/)

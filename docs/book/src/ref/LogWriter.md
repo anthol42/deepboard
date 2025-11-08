@@ -91,7 +91,7 @@ scalar steps.
 ## Method: `detect_and_log_figures()`
 
 ```python
-detect_and_log_figures(self, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False)
+detect_and_log_figures(self, step: Optional[int] = None, tag: Optional[str] = None, epoch: Optional[int] = None, flush: bool = False, close_figs: bool = False)
 ```
 
 **Description:** Detect matplotlib figures that are currently open and log them to the result table. (Save them as png).
@@ -103,6 +103,7 @@ steps.
 - `tag`: A tag describing the figures.
 - `epoch`: The epoch at which the images were generated. If None, no epoch is saved.
 - `flush`: If True, flush all data in memory to the database.
+- `close_figs`: If True, close all figures after detection.
 
 ## Method: `get_figures()`
 
