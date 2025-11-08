@@ -29,9 +29,13 @@ def get_values(socket, type: Literal["RAW", "HTML", "IMAGE", "PLOT"]):
     epochs = list({fragment["epoch"] for fragment in fragments})
     tags = list({fragment["tag"] for fragment in fragments})
     reps = list({fragment["run_rep"] for fragment in fragments})
+    steps = [s for s in steps if s is not None]
     steps.sort()
+    epochs = [e for e in epochs if e is not None]
     epochs.sort()
+    tags = [t for t in tags if t is not None]
     tags.sort()
+    reps = [r for r in reps if r is not None]
     reps.sort()
 
     return FragmentsStats(steps, epochs, tags, reps)

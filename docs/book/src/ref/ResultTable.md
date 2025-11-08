@@ -50,7 +50,7 @@ that it will also show columns that were hidden.
 ## Method: `get_file_hash()`
 
 ```python
-get_file_hash(file_path: str, hash_algo: str = 'sha256') -> str
+get_file_hash(configfile: Union[str, IO[str]], hash_algo: str = 'sha256') -> str
 ```
 
 **Description:** Returns the hash of the file at file_path using the specified hashing algorithm.
@@ -134,7 +134,7 @@ load_run(self, run_id) -> deepboard.resultTable.logwritter.LogWriter
 ## Method: `new_debug_run()`
 
 ```python
-new_debug_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath, NoneType] = None, cli: Optional[dict] = None, comment: Optional[str] = None, tag: str = '', flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
+new_debug_run(self, experiment_name: str, configfile: Union[str, pathlib._local.PurePath, IO[str], NoneType] = None, cli: Optional[dict] = None, comment: Optional[str] = None, tag: str = '', flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
 ```
 
 **Description:** Create a new DEBUG socket to log the results. The results will be entered in the result table, but as the runID -1.
@@ -146,7 +146,7 @@ Note:
 
 **Parameters:**
 - `experiment_name`: The name of the current experiment
-- `config_path`: The path to the configuration path
+- `configfile`: The path to the configuration path
 - `cli`: The cli arguments
 - `comment`: The comment, if any
 - `tag`: The tag of the run
@@ -160,14 +160,14 @@ Note:
 ## Method: `new_run()`
 
 ```python
-new_run(self, experiment_name: str, config_path: Union[str, pathlib._local.PurePath, NoneType] = None, cli: Optional[dict] = None, comment: Optional[str] = None, tag: str = '', flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
+new_run(self, experiment_name: str, configfile: Union[str, pathlib._local.PurePath, IO[str], NoneType] = None, cli: Optional[dict] = None, comment: Optional[str] = None, tag: str = '', flush_each: int = 10, keep_each: int = 1, auto_log_plt: bool = True, disable: bool = False) -> deepboard.resultTable.logwritter.LogWriter
 ```
 
 **Description:** Create a new logwritter object bound to a run entry in the table. Think of it as a socket.
 
 **Parameters:**
 - `experiment_name`: The name of the current experiment
-- `config_path`: The path to the configuration path
+- `configfile`: The path to the configuration path, or the file-like object containing the configuration
 - `cli`: The cli arguments
 - `comment`: The comment, if any
 - `tag`: The tag of the run

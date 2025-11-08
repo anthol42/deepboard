@@ -31,9 +31,13 @@ def _get_images(socket, type: Literal["IMAGE", "PLOT"]):
     epochs = list({img["epoch"] for img in images})
     tags = list({img["tag"] for img in images})
     reps = list({img["run_rep"] for img in images})
+    steps = [s for s in steps if s is not None]
     steps.sort()
+    epochs = [e for e in epochs if e is not None]
     epochs.sort()
+    tags = [t for t in tags if t is not None]
     tags.sort()
+    reps = [r for r in reps if r is not None]
     reps.sort()
     return images, ImagesStats(steps, epochs, tags, reps)
 

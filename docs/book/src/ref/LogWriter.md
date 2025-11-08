@@ -27,12 +27,13 @@ scalar steps.
 ## Method: `add_hparams()`
 
 ```python
-add_hparams(self, **kwargs)
+add_hparams(self, param_dict: Optional[dict[str, Any]] = None, **kwargs)
 ```
 
 **Description:** Add hyperparameters to the result table
 
 **Parameters:**
+- `param_dict`: The hyperparameters to add as a dict.
 - `kwargs`: The hyperparameters to save
 
 ## Method: `add_image()`
