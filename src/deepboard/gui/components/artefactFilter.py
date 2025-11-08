@@ -96,7 +96,7 @@ def ArtefactFilter(session, type: str, elem2filter: str, swap: bool = False):
             A('Select All', href="#", hx_get=f"/artefact_filter_select_all?elem={elem2filter}&type={type}", hx_target="#windowed-modal", hx_swap="outerHTML"),
             cls="quick-filter-action"
         ),
-        Button("Filter", cls="quick-filter-button", hx_get=f'/filter_artefacts?type={type}', hx_target="#tab-content", hx_swap="innerHTML"),
+        Button("Filter", cls="quick-filter-button", hx_get=f'/filter_artefacts?type={type}', hx_target="#sp-tab-content", hx_swap="innerHTML"),
         title=f"Filter {name}",
         closable=True,
         active=True,

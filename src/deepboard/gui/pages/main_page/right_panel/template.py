@@ -39,40 +39,40 @@ def Tabs(session, run_id, active_tab: str, inner: bool = False):
     if scalar_is_available:
         tabs.append(
             Div('Scalars', cls='tab active' if active_tab == 'scalars' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#sd-tab-menu')
+                hx_get=f'/fillpanel?run_id={run_id}&tab=scalars', hx_target='#sp-tab-menu')
         )
 
     if images_is_available:
         tabs.append(
             Div('Images', cls='tab active' if active_tab == 'images' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=images', hx_target='#sd-tab-menu')
+                hx_get=f'/fillpanel?run_id={run_id}&tab=images', hx_target='#sp-tab-menu')
         )
 
     if plot_is_available:
         tabs.append(
             Div('Figures', cls='tab active' if active_tab == 'figures' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=figures', hx_target='#sd-tab-menu')
+                hx_get=f'/fillpanel?run_id={run_id}&tab=figures', hx_target='#sp-tab-menu')
         )
 
     if text_is_available:
         tabs.append(
             Div('Text', cls='tab active' if active_tab == 'text' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=text', hx_target='#sd-tab-menu')
+                hx_get=f'/fillpanel?run_id={run_id}&tab=text', hx_target='#sp-tab-menu')
         )
 
     if fragment_is_available:
         tabs.append(
             Div('Fragments', cls='tab active' if active_tab == 'fragments' else 'tab',
-                hx_get=f'/fillpanel?run_id={run_id}&tab=fragments', hx_target='#sd-tab-menu')
+                hx_get=f'/fillpanel?run_id={run_id}&tab=fragments', hx_target='#sp-tab-menu')
         )
 
     tabs += [
         Div('Config', cls='tab active' if active_tab == 'config' else 'tab',
-            hx_get=f'/fillpanel?run_id={run_id}&tab=config', hx_target='#sd-tab-menu'),
+            hx_get=f'/fillpanel?run_id={run_id}&tab=config', hx_target='#sp-tab-menu'),
         Div('HParams', cls='tab active' if active_tab == 'hparams' else 'tab',
-            hx_get=f'/fillpanel?run_id={run_id}&tab=hparams', hx_target='#sd-tab-menu'),
+            hx_get=f'/fillpanel?run_id={run_id}&tab=hparams', hx_target='#sp-tab-menu'),
         Div('Info', cls='tab active' if active_tab == 'run_info' else 'tab',
-            hx_get=f'/fillpanel?run_id={run_id}&tab=run_info', hx_target='#sd-tab-menu'),
+            hx_get=f'/fillpanel?run_id={run_id}&tab=run_info', hx_target='#sp-tab-menu'),
     ]
     if inner:
         return Div(
@@ -86,7 +86,7 @@ def Tabs(session, run_id, active_tab: str, inner: bool = False):
                     style="display: flex;"
                 ),
                 cls='tab-menu',
-                id="sd-tab-menu",
+                id="sp-tab-menu",
             )
 
 def TabContent(session, run_id: int, active_tab: str, swap: bool = False):
@@ -113,7 +113,7 @@ def TabContent(session, run_id: int, active_tab: str, swap: bool = False):
 
     return Div(
         tab_content,
-        id='sd-tab-content', cls='tab-content',
+        id='sp-tab-content', cls='tab-content',
         hx_swap_oob="true" if swap else None,
     )
 def RightPanelContent(session, run_id: int, active_tab: str):

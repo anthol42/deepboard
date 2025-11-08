@@ -47,7 +47,7 @@ class LogWriter:
         self.log_count = {}
 
         self.image_buffer = []
-        self.fig_ids = set()
+        self._processed_figs = set()
 
         self.fragments_buffer = []
 
@@ -187,7 +187,7 @@ class LogWriter:
 
 
     def detect_and_log_figures(self, step: Optional[int] = None, tag: Optional[str] = None,
-                               epoch: Optional[int] = None, flush: bool = False):
+                               epoch: Optional[int] = None, flush: bool = False, close_figs: bool = False):
         """
         Detect matplotlib figures that are currently open and log them to the result table. (Save them as png).
         :param step: The global step at which the image was generated. If None, the maximum step is taken from all global
@@ -195,6 +195,7 @@ class LogWriter:
         :param tag: A tag describing the figures.
         :param epoch: The epoch at which the images were generated. If None, no epoch is saved.
         :param flush: If True, flush all data in memory to the database.
+        :param close_figs: If True, close all figures after detection.
         :return: None
         """
         if step is None:
@@ -203,17 +204,16 @@ class LogWriter:
 
         for num in plt.get_fignums():
             fig = plt.figure(num)
+            if fig in self._processed_figs:
+                continue
+            self._processed_figs.add(fig)
             fig.tight_layout()
 
             # Save it as bytes
             buffer = BytesIO()
             fig.savefig(buffer, format='png')
-            buffer.seek(0)
-            fig_hash = hashlib.sha256(buffer.read()).hexdigest()
-            if fig_hash in self.fig_ids:
-                # If we already logged this figure, skip it
-                continue
-            self.fig_ids.add(fig_hash)
+            if close_figs:
+                plt.close(fig)
             img_bytes = buffer.getvalue()
 
             self._log_image(img_bytes, step, tag, self.run_rep, epoch, type="PLOT")

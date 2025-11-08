@@ -42,7 +42,7 @@ def ArtefactHeader(session, type: str, show_options: bool = False):
                 f"{key.capitalize()}",
                 I(cls="fa-solid fa-x", style="margin-left: 1em"),
                 hx_get=f"/artefact_clear_filter?type={type}&element={key}",
-                hx_target="#tab-content",
+                hx_target="#sp-tab-content",
                 cls="artefact-header-button filter"
             )
             for key in filters.keys() if len(filters[key]) > 0
