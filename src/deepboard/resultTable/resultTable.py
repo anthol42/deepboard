@@ -110,7 +110,7 @@ class ResultTable:
         self.unique_columns = unique_columns
 
     def new_run(self, experiment_name: str,
-                config_path: Optional[Union[str, PurePath]] = None,
+                configfile: Optional[Union[str, PurePath, IO[str]]] = None,
                 cli: Optional[dict] = None,
                 comment: Optional[str] = None,
                 tag: str = "",
@@ -122,7 +122,7 @@ class ResultTable:
         """
         Create a new logwritter object bound to a run entry in the table. Think of it as a socket.
         :param experiment_name: The name of the current experiment
-        :param config_path: The path to the configuration path
+        :param configfile: The path to the configuration path, or the file-like object containing the configuration
         :param cli: The cli arguments
         :param comment: The comment, if any
         :param tag: The tag of the run
@@ -141,8 +141,8 @@ class ResultTable:
 
         commit = get_last_commit()
         start = datetime.now()
-        config_str = None if config_path is None else str(config_path)
-        config_hash = None if config_path is None else self.get_file_hash(config_path)
+        config_str = None if configfile is None or hasattr(configfile, "read") else str(configfile)
+        config_hash = None if configfile is None else self.get_file_hash(configfile)
         comment = "" if comment is None else comment
         cli = " ".join([f'{key}={value}' for key, value in cli.items()]) if cli is not None else ""
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
@@ -198,18 +198,15 @@ class ResultTable:
                 else:
                     run_id = self._create_run(experiment_name, config_str, config_hash, cli, command, comment, tag, start, commit, diff)
 
-            self._store_config(run_id, config_path)
+            self._store_config(run_id, configfile)
         else:
             run_id = -2 # If disabled and not debug, we use -2 to indicate that it is a disabled run
-            if not isinstance(config_path, PurePath):
-                config_path = PurePath(config_path)
-            config_name = config_path.name
 
         return LogWriter(self.db_path, run_id, datetime.now(), flush_each=flush_each, keep_each=keep_each,
                          disable=disable, auto_log_plt=auto_log_plt)
 
     def new_debug_run(self, experiment_name: str,
-                config_path: Optional[Union[str, PurePath]] = None,
+                configfile: Optional[Union[str, PurePath, IO[str]]] = None,
                 cli: Optional[dict] = None,
                 comment: Optional[str] = None,
                 tag: str = "",
@@ -226,7 +223,7 @@ class ResultTable:
         Note:
             It will not log the git diff or git hash
         :param experiment_name: The name of the current experiment
-        :param config_path: The path to the configuration path
+        :param configfile: The path to the configuration path
         :param cli: The cli arguments
         :param comment: The comment, if any
         :param tag: The tag of the run
@@ -236,16 +233,15 @@ class ResultTable:
         :param disable: If true, disable the logwriter, meaning that nothing will be written to the database.
         :return: The log writer
         """
-
         start = datetime.now()
-        config_str = None if config_path is None else str(config_path)
-        config_hash = None if config_path is None else self.get_file_hash(config_path)
+        config_str = None if configfile is None or hasattr(configfile, "read") else str(configfile)
+        config_hash = None if configfile is None else self.get_file_hash(configfile)
         comment = "" if comment is None else comment
         cli = "" if cli is None else " ".join([f'{key}={value}' for key, value in cli.items()])
         command = " ".join(shlex.quote(arg) for arg in sys.argv)
         if not disable:
             self._create_run_with_id(-1, experiment_name, config_str, config_hash, cli, command, comment, tag, start, None, None)
-            self._store_config(-1, config_path)
+            self._store_config(-1, configfile)
 
         return LogWriter(self.db_path, -1, datetime.now(), flush_each=flush_each, keep_each=keep_each, disable=disable,
                          auto_log_plt=auto_log_plt)
@@ -551,15 +547,18 @@ class ResultTable:
         return Cursor(self.db_path, format_as_dict=True)
 
 
-    def _store_config(self, run_id: int, config_path: Optional[Union[str, PurePath]]):
+    def _store_config(self, run_id: int, configfile: Optional[Union[str, PurePath, IO[str]]]):
         """
         Store the configuration file in the database.
         :param run_id: The run id
         :param config_path: The path to the configuration file
         :return: None
         """
-        if config_path is not None:
-            with open(config_path, 'r') as f:
+        # Config has been passed as a file-like object
+        if configfile is not None and hasattr(configfile, "read"):
+            config_content = configfile.read()
+        elif configfile is not None: # Configfile is a path
+            with open(configfile, 'r') as f:
                 config_content = f.read()
         else:
             config_content = None
@@ -612,13 +611,17 @@ class ResultTable:
             cursor.execute("DELETE FROM Results WHERE run_id=?", (run_id,))
 
     @staticmethod
-    def get_file_hash(file_path: str, hash_algo: str = 'sha256') -> str:
+    def get_file_hash(configfile: Union[str, IO[str]], hash_algo: str = 'sha256') -> str:
         """Returns the hash of the file at file_path using the specified hashing algorithm."""
         hash_func = hashlib.new(hash_algo)  # Create a new hash object for the specified algorithm
-
-        with open(file_path, 'rb') as file:
-            while chunk := file.read(8192):  # Read the file in chunks to avoid memory overflow
-                hash_func.update(chunk)  # Update the hash with the current chunk
+        if hasattr(configfile, "read"):  # If configfile is a file-like object
+            while chunk := configfile.read(8192):  # Read the file in chunks to avoid memory overflow
+                hash_func.update(chunk.encode() if isinstance(chunk, str) else chunk)  # Update the hash with the current chunk
+            configfile.seek(0)
+        else:
+            with open(configfile, 'rb') as file:
+                while chunk := file.read(8192):  # Read the file in chunks to avoid memory overflow
+                    hash_func.update(chunk)  # Update the hash with the current chunk
 
         return hash_func.hexdigest()
 

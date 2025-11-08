@@ -9,8 +9,8 @@ Bugs:
 - [X] Fix bug when coloring rows with a filter. (Does not color the good row)
 - [X] Auto update result table when updating tag
 - [X] Compare page: Cannot hide lines
-- [ ] Hidden lines do not have style
-- [ ] Header columns are not frozen in the result table
+- [X] Hidden lines do not have style
+- [X] Header columns are not frozen in the result table
 
 Next version
 - [X] Add a major version number in the database to avoid running a database with a wrong version
